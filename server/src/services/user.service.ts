@@ -1,9 +1,10 @@
 import AppDataSource from "../datasource/datasource";
-import jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken");
 import { User } from "../entity/User";
-import { IUser } from "../interfaces/user.interface";
+import { IUser, IUserResponse } from "../interfaces/user.interface";
 import APIError from "../utils/apiErrors";
 import "dotenv/config";
+const bcrypt = require("bcryptjs");
 
 const secretKey: string = process.env.JWTSECRET || "defaultwebtoken";
 const expirationTime = process.env.EXPIRATIONTIME;
@@ -11,10 +12,7 @@ const expirationTime = process.env.EXPIRATIONTIME;
 class UserService {
   private userRepository = AppDataSource.getRepository(User);
 
-  async createUser(
-    email: string,
-    password: string
-  ): Promise<Omit<IUser, "password">> {
+  async createUser(email: string, password: string): Promise<IUserResponse> {
     // check if user already exist
     const existingUser = await this.userRepository.findOneBy({ email });
 
@@ -40,6 +38,39 @@ class UserService {
 
     return response;
   }
+
+
+  async loginUser(email: string, password: string): Promise<IUserResponse> {
+    // get the user using email
+    const currentUser = await this.userRepository.findOneBy({ email });
+
+    if (!currentUser) {
+      throw new APIError("Invalid credentials", 400);
+    }
+
+    // compare password
+    const isCorrectPassword = bcrypt.compare(password, currentUser.password);
+
+    if (!isCorrectPassword) {
+      throw new APIError("Invalid credentials", 400);
+    }
+
+    // generate token
+    const payload = { email: currentUser.email, id: currentUser.id };
+
+    const token = jwt.sign(payload, secretKey, { expiresIn: expirationTime });
+
+    //response
+    const response = {
+      accessToken: token,
+      email: currentUser.email,
+      id: currentUser.id
+    };
+
+    return response;
+  
+  
+  async verifyToken(token: string): Promise<
 }
 
 const userService = new UserService();

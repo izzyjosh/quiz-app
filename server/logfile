@@ -9,3 +9,9 @@
 2025-01-03 23:10:11.690 WAT [30089] LOG:  checkpoint starting: end-of-recovery immediate wait
 2025-01-03 23:10:11.706 WAT [30089] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.002 s, total=0.017 s; sync files=2, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/8228028, redo lsn=0/8228028
 2025-01-03 23:10:11.717 WAT [30084] LOG:  database system is ready to accept connections
+2025-01-03 23:55:12.470 WAT [30089] LOG:  checkpoint starting: time
+2025-01-03 23:55:18.376 WAT [30089] LOG:  checkpoint complete: wrote 58 buffers (0.4%); 0 WAL file(s) added, 0 removed, 0 recycled; write=5.808 s, sync=0.046 s, total=5.907 s; sync files=45, longest=0.006 s, average=0.001 s; distance=190 kB, estimate=190 kB; lsn=0/8257BC0, redo lsn=0/8257B30
+2025-01-04 00:10:12.642 WAT [30089] LOG:  checkpoint starting: time
+2025-01-04 00:10:14.400 WAT [30089] LOG:  checkpoint complete: wrote 17 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.729 s, sync=0.007 s, total=1.760 s; sync files=10, longest=0.002 s, average=0.001 s; distance=33 kB, estimate=175 kB; lsn=0/8260308, redo lsn=0/82602B0
+2025-01-04 00:15:12.502 WAT [30089] LOG:  checkpoint starting: time
+2025-01-04 00:15:13.045 WAT [30089] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.515 s, sync=0.004 s, total=0.543 s; sync files=5, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=157 kB; lsn=0/8260638, redo lsn=0/82605E0

@@ -37,15 +37,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var datasource_1 = require("../datasource/datasource");
-var jsonwebtoken_1 = require("jsonwebtoken");
+var jwt = require("jsonwebtoken");
 var User_1 = require("../entity/User");
 var apiErrors_1 = require("../utils/apiErrors");
 require("dotenv/config");
+var bcrypt = require("bcryptjs");
 var secretKey = process.env.JWTSECRET || "defaultwebtoken";
 var expirationTime = process.env.EXPIRATIONTIME;
 var UserService = /** @class */ (function () {
     function UserService() {
         this.userRepository = datasource_1.default.getRepository(User_1.User);
+        this.userService = new UserService();
     }
     UserService.prototype.createUser = function (email, password) {
         return __awaiter(this, void 0, Promise, function () {
@@ -65,7 +67,7 @@ var UserService = /** @class */ (function () {
                     case 2:
                         savedUser = _a.sent();
                         payload = { email: savedUser.email, id: savedUser.id };
-                        token = jsonwebtoken_1.default.sign(payload, secretKey, { expiresIn: expirationTime });
+                        token = jwt.sign(payload, secretKey, { expiresIn: expirationTime });
                         response = {
                             accessToken: token,
                             email: savedUser.email,
@@ -76,7 +78,32 @@ var UserService = /** @class */ (function () {
             });
         });
     };
+    UserService.prototype.loginUser = function (email, password) {
+        return __awaiter(this, void 0, Promise, function () {
+            var currentUser, isCorrectPassword, payload, token, response;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.userRepository.findOneBy({ email: email })];
+                    case 1:
+                        currentUser = _a.sent();
+                        if (!currentUser) {
+                            throw new apiErrors_1.default("Invalid credentials", 400);
+                        }
+                        isCorrectPassword = bcrypt.compare(password, currentUser.password);
+                        if (!isCorrectPassword) {
+                            throw new apiErrors_1.default("Invalid credentials", 400);
+                        }
+                        payload = { email: currentUser.email, id: currentUser.id };
+                        token = jwt.sign(payload, secretKey, { expiresIn: expirationTime });
+                        response = {
+                            accessToken: token,
+                            email: currentUser.email,
+                            id: currentUser.id
+                        };
+                        return [2 /*return*/, response];
+                }
+            });
+        });
+    };
     return UserService;
 }());
-var userService = new UserService();
-exports.default = userService;

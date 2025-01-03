@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createUser = void 0;
+exports.loginUser = exports.createUser = void 0;
 var express_validator_1 = require("express-validator");
 var catchAsync_1 = require("../utils/catchAsync");
 var parseValidationError_1 = require("../utils/parseValidationError");
@@ -61,6 +61,28 @@ exports.createUser = (0, catchAsync_1.default)(function (req, res) { return __aw
                         res: res,
                         statusCode: http_status_codes_1.StatusCodes.CREATED,
                         message: "User created successfully",
+                        data: response
+                    })];
+        }
+    });
+}); });
+exports.loginUser = (0, catchAsync_1.default)(function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var errors, _a, email, password, response;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                errors = (0, parseValidationError_1.default)(req);
+                if (errors.length > 0) {
+                    throw new apiErrors_1.APIValidationError(errors);
+                }
+                _a = (0, express_validator_1.matchedData)(req), email = _a.email, password = _a.password;
+                return [4 /*yield*/, user_service_1.default.loginUser(email, password)];
+            case 1:
+                response = _b.sent();
+                return [2 /*return*/, (0, successResponse_1.default)({
+                        res: res,
+                        statusCode: http_status_codes_1.StatusCodes.OK,
+                        message: "User logged in successfully",
                         data: response
                     })];
         }

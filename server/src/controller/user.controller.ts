@@ -21,6 +21,25 @@ export const createUser = catchAsync(async (req: Request, res: Response) => {
     res,
     statusCode: StatusCodes.CREATED,
     message: "User created successfully",
-    data: response,
+    data: response
+  });
+});
+
+export const loginUser = catchAsync(async (req: Request, res: Response) => {
+  const errors = parseValidationError(req);
+
+  if (errors.length > 0) {
+    throw new APIValidationError(errors);
+  }
+
+  const { email, password } = matchedData(req);
+
+  const response = await UserService.loginUser(email, password);
+
+  return successResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    message: "User logged in successfully",
+    data: response
   });
 });

@@ -44,7 +44,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 var typeorm_1 = require("typeorm");
-var bcryptjs_1 = require("bcryptjs");
+var bcrypt = require("bcryptjs");
 var User = /** @class */ (function () {
     function User() {
     }
@@ -55,7 +55,7 @@ var User = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         _a = this;
-                        return [4 /*yield*/, bcryptjs_1.default.hash(this.password, 10)];
+                        return [4 /*yield*/, bcrypt.hash(this.password, 10)];
                     case 1:
                         _a.password = _b.sent();
                         return [2 /*return*/];
