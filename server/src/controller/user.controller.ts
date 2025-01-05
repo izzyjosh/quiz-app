@@ -3,7 +3,7 @@ import { matchedData } from "express-validator";
 import catchAsync from "../utils/catchAsync";
 import parseValidationError from "../utils/parseValidationError";
 import { APIValidationError } from "../utils/apiErrors";
-import UserService from "../services/user.service";
+import userService from "../services/user.service";
 import successResponse from "../utils/successResponse";
 import { StatusCodes } from "http-status-codes";
 
@@ -15,7 +15,7 @@ export const createUser = catchAsync(async (req: Request, res: Response) => {
   }
 
   const { email, password } = matchedData(req);
-  const response = await UserService.createUser(email, password);
+  const response = await userService.createUser(email, password);
 
   return successResponse({
     res,
@@ -34,7 +34,7 @@ export const loginUser = catchAsync(async (req: Request, res: Response) => {
 
   const { email, password } = matchedData(req);
 
-  const response = await UserService.loginUser(email, password);
+  const response = await userService.loginUser(email, password);
 
   return successResponse({
     res,

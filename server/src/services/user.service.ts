@@ -17,7 +17,7 @@ class UserService {
     const existingUser = await this.userRepository.findOneBy({ email });
 
     if (existingUser) {
-      throw new APIError("User with this email  already exist", 404);
+      throw new APIError("User with this email already exist", 404);
     }
     // create user
     const user = new User();
@@ -38,7 +38,6 @@ class UserService {
 
     return response;
   }
-
 
   async loginUser(email: string, password: string): Promise<IUserResponse> {
     // get the user using email
@@ -68,9 +67,7 @@ class UserService {
     };
 
     return response;
-  
-  
-  async verifyToken(token: string): Promise<
+  }
 }
 
 const userService = new UserService();

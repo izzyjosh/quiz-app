@@ -47,7 +47,6 @@ var expirationTime = process.env.EXPIRATIONTIME;
 var UserService = /** @class */ (function () {
     function UserService() {
         this.userRepository = datasource_1.default.getRepository(User_1.User);
-        this.userService = new UserService();
     }
     UserService.prototype.createUser = function (email, password) {
         return __awaiter(this, void 0, Promise, function () {
@@ -58,7 +57,7 @@ var UserService = /** @class */ (function () {
                     case 1:
                         existingUser = _a.sent();
                         if (existingUser) {
-                            throw new apiErrors_1.default("User with this email  already exist", 404);
+                            throw new apiErrors_1.default("User with this email already exist", 404);
                         }
                         user = new User_1.User();
                         user.email = email;
@@ -107,3 +106,5 @@ var UserService = /** @class */ (function () {
     };
     return UserService;
 }());
+var userService = new UserService();
+exports.default = userService;
