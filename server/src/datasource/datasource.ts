@@ -6,7 +6,7 @@ config();
 
 const AppDataSource = new DataSource({
   type: "postgres",
-  host: process.env.HOST,
+  host: process.env.DATABASE_HOST,
   port: Number(process.env.DATABASE_PORT),
   username: process.env.DATABASE_USERNAME,
   password: process.env.DATABASE_PASSWORD,
@@ -15,7 +15,7 @@ const AppDataSource = new DataSource({
   logging: process.env.DEBUG === "true",
   entities: [User],
   subscribers: [],
-  migrations: [],
+  migrations: []
 });
 
 export default AppDataSource;

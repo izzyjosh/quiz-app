@@ -12,7 +12,11 @@ const expirationTime = process.env.EXPIRATIONTIME;
 class UserService {
   private userRepository = AppDataSource.getRepository(User);
 
-  async createUser(email: string, password: string): Promise<IUserResponse> {
+  async createUser(
+    email: string,
+    password: string,
+    role: "user" | "admin" = "user"
+  ): Promise<IUserResponse> {
     // check if user already exist
     const existingUser = await this.userRepository.findOneBy({ email });
 
@@ -23,17 +27,19 @@ class UserService {
     const user = new User();
     user.email = email;
     user.password = password;
+    user.role = role;
 
     const savedUser = await this.userRepository.save(user);
 
-    const payload = { email: savedUser.email, id: savedUser.id };
+    const payload = { email: savedUser.email, id: savedUser.id, role: savedUser.role };
 
     const token = jwt.sign(payload, secretKey, { expiresIn: expirationTime });
 
     const response = {
       accessToken: token,
       email: savedUser.email,
-      id: savedUser.id
+      id: savedUser.id,
+      role: savedUser.role
     };
 
     return response;

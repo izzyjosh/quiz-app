@@ -1,10 +1,11 @@
 export interface IUser {
-    email: string;
-    password: string;
+  email: string;
+  password: string;
 }
 
 export interface IUserResponse {
- email: string;
- id: number;
- accessToken: string;
+  email: string;
+  id: string;
+  accessToken: string;
+  role?: "user" | "admin";
 }

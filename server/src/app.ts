@@ -1,6 +1,7 @@
 import express, { Express } from "express";
 import { config } from "dotenv";
 import logger from "morgan";
+import "reflect-metadata";
 import AppDataSource from "./datasource/datasource";
 import authRouter from "./routes/v1/user.routes";
 import {
@@ -24,6 +25,7 @@ app.use(ServerErrorMiddleware);
 
 (async () => {
   try {
+    
     await AppDataSource.initialize();
     app.listen(3000, () => {
       console.log(`Server listening on port ${app.get("port")}`);
