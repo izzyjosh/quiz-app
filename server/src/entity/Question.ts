@@ -12,13 +12,13 @@ import { v4 as uuidv4 } from "uuid";
 import { Quiz } from "./Quiz";
 
 @Entity()
-export class Qusestion {
+export class Question {
   @PrimaryColumn("uuid")
   id: string;
 
   @BeforeInsert()
   generateId() {
-    this.id = uuidv4;
+    this.id = uuidv4();
   }
 
   @Column()

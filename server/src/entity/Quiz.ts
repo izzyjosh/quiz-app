@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-  MayToOne,
+  ManyToOne,
   BeforeInsert
 } from "typeorm";
 import { v4 as uuidv4 } from "uuid";
@@ -20,7 +20,7 @@ export class Quiz {
 
   @BeforeInsert()
   generateId() {
-    this.id = uuidv4;
+    this.id = uuidv4();
   }
 
   @Column()
