@@ -1,7 +1,7 @@
 export interface IQuiz {
   title: string;
   description?: string;
-  numberOfQuestions: Number;
+  numberOfQuestions: number;
   timelimit: string;
   categoryId: string;
   questions?: Array;

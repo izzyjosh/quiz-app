@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import quizRepository from "../services/quiz.service";
 import successResponse from "../utils/successResponse";
-
+import { IQuiz } from "../interfaces/quiz.interface";
 import { matchedData } from "express-validator";
 import { StatusCodes } from "http-status-codes";
 import parseValidationError from "../utils/parseValidationError";
@@ -25,7 +25,7 @@ class QuizController {
       throw new APIValidationError(errors);
     }
 
-    const quizData = matchedData(req);
+    const quizData = matchedData(req) as IQuiz;
 
     const response = await quizRepository.createQuiz(quizData);
 

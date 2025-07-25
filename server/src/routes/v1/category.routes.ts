@@ -12,6 +12,6 @@ categoryRouter.post(
   categoryValidator,
   catchAsync(CategoryController.create)
 );
-categoryRoute.delete("/:id", catchAsync(CategoryController.deleteCategory));
+categoryRouter.delete("/:id", catchAsync(CategoryController.deleteCategory));
 
 export default categoryRouter

@@ -28,7 +28,7 @@ export class QuizService {
       throw new APIError("category does not exist", 404);
     }
 
-    const quiz = this.quizRepository.create(...quizData, category);
+    const quiz = this.quizRepository.create({...quizData, category});
     await this.quizRepository.save(quiz);
     return quiz;
   }

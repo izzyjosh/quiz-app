@@ -5,6 +5,8 @@ import parseValidationError from "../utils/parseValidationError";
 import APIError, { APIValidationError } from "../utils/apiErrors";
 import { matchedData } from "express-validator";
 import { StatusCodes } from "http-status-codes";
+import successResponse from "../utils/successResponse";
+import { ICategory } from "../interfaces/category.interface";
 
 class CategoryController {
   static async create(req: Request, res: Response) {
@@ -13,8 +15,8 @@ class CategoryController {
       throw new APIValidationError(errors);
     }
 
-    const data = matchedData(req);
-    const response = await categoryRepository.create(data);
+    const data = matchedData(req) as ICategory;
+    const response = await categoryRepository.createCategory(data);
 
     successResponse({
       res,
@@ -26,7 +28,7 @@ class CategoryController {
 
   static async findOne(req: Request, res: Response) {
     const id = req.params.id;
-    const response = await categoryRepository.findOne(id);
+    const response = await categoryRepository.fetchOne(id);
     successResponse({
       res,
       statusCode: StatusCodes.OK,
@@ -45,7 +47,7 @@ class CategoryController {
     });
   }
 
-  static async deleteCategory(re: Request, res: Response) {
+  static async deleteCategory(req: Request, res: Response) {
     const id = req.params.id;
     const response = await categoryRepository.deleteCategory(id);
 
@@ -53,10 +55,9 @@ class CategoryController {
       res,
       statusCode: StatusCodes.OK,
       message: "category deleted successfully",
-      data: data
+      data: response
     });
   }
 }
 
-
-export default CategoryController
+export default CategoryController;

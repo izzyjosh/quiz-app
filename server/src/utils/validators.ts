@@ -87,3 +87,44 @@ export const categoryValidator = [
     .isLength({ max: 255 })
     .withMessage("must be less than 255 characters")
 ];
+
+export const questionValidator = [
+  check("question")
+    .notEmpty()
+    .withMessage("this field is required")
+    .isString()
+    .withMessage("must be a strikg"),
+  check("options")
+    .isArray({ min: 1 })
+    .withMessage("Options must be a non-empty array")
+    .custom(value => {
+      if (!value.every((v: any) => typeof v === "string")) {
+        throw new Error("Each option must be a string");
+      }
+      return true;
+    }),
+  check("answer")
+    .notEmpty()
+    .withMessage("this field is required")
+    .isString()
+    .withMessage("must be a string"),
+  check("quizId")
+    .notEmpty()
+    .withMessage("field is required")
+    .isString()
+    .withMessage("must be a valid string")
+];
+export const updateQuestionValidator = [
+  check("question").optional().isString().withMessage("must be a strikg"),
+  check("options")
+    .optional()
+    .isArray({ min: 1 })
+    .withMessage("Options must be a non-empty array")
+    .custom(value => {
+      if (!value.every((v: any) => typeof v === "string")) {
+        throw new Error("Each option must be a string");
+      }
+      return true;
+    }),
+  check("answer").optional().isString().withMessage("must be a string")
+];
