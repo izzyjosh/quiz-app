@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { z } from "zod";
+import { jwt, z } from "zod";
 
 dotenv.config();
 
@@ -14,7 +14,7 @@ const envSchema = z.object({
   DATABASE_USERNAME: z.string().min(1),
   DATABASE_PASSWORD: z.string().min(1),
   DATABASE_NAME: z.string().min(1),
-  //JWT_SECRET: z.string().min(1),
+  JWT_SECRET: z.string().min(1),
 });
 
 const env = envSchema.parse(process.env);
@@ -22,6 +22,9 @@ const env = envSchema.parse(process.env);
 export const config = {
   port: Number(env.PORT),
   nodeEnv: env.NODE_ENV,
+  jwt: {
+    secret: env.JWT_SECRET,
+  },
   database: {
     host: env.DATABASE_HOST,
     port: Number(env.DATABASE_PORT),

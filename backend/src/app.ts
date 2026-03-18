@@ -13,6 +13,7 @@ import compression from "compression";
 import logger from "morgan";
 import helmet from "helmet";
 import { AppDataSource } from "./config/datasource";
+import { authRouter } from "./routes/auth.routes";
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.get("/", (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(response);
 });
 
+app.use("/api/auth", authRouter);
 // Middlewares
 
 app.use(NotFoundErrorHandler);

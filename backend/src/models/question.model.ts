@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Quiz } from "./quiz.model";
-import { Option } from "./option";
+import { Option } from "./option.model";
 
 @Entity("questions")
 export class Question {
