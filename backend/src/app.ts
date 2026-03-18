@@ -62,7 +62,6 @@ console.log("Starting server...");
   try {
     await AppDataSource.initialize();
     sysLogger.info("Database connected successfully");
-    await AppDataSource.query("SELECT 1");
 
     app.listen(app.get("port"), () => {
       sysLogger.info(`Server is running on port ${app.get("port")}`);
