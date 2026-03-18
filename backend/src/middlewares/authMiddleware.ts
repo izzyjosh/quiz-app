@@ -2,6 +2,15 @@ import { NextFunction } from "express";
 import { UnauthorizedError } from "../utils/api.errors";
 import jwt from "jsonwebtoken";
 import { config } from "../config/config";
+import { z } from "zod";
+
+// JWT Payload Schema
+const JWTPayloadSchema = z.object({
+  id: z.string(),
+  email: z.string().email(),
+});
+
+type JWTPayload = z.infer<typeof JWTPayloadSchema>;
 
 export const authMiddleware = (req: any, res: any, next: NextFunction) => {
   const authHeader = req.headers.authorization;
@@ -15,7 +24,9 @@ export const authMiddleware = (req: any, res: any, next: NextFunction) => {
   }
 
   try {
-    const decode: any = jwt.verify(token, config.jwt.secret);
+    const decode: JWTPayload = JWTPayloadSchema.parse(
+      jwt.verify(token, config.jwt.secret),
+    );
     req.user = decode;
     next();
   } catch (error) {

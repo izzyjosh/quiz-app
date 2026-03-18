@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -21,10 +22,14 @@ export class Quiz {
   description!: string;
 
   @Column({ default: 10 })
-  timeLimit!: number; // in seconds
+  timeLimit!: number; // in seconds per questions
 
   @ManyToOne(() => User, (user) => user.quizzes)
+  @JoinColumn({ name: "userId" })
   user!: User;
+
+  @Column()
+  userId!: string;
 
   @OneToMany(() => Question, (question) => question.quiz)
   questions!: Question[];

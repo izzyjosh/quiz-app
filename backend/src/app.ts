@@ -14,6 +14,7 @@ import logger from "morgan";
 import helmet from "helmet";
 import { AppDataSource } from "./config/datasource";
 import { authRouter } from "./routes/auth.routes";
+import { quizRouter } from "./routes/quiz.routes";
 
 const app = express();
 
@@ -52,6 +53,8 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/quizzes", quizRouter);
+
 // Middlewares
 
 app.use(NotFoundErrorHandler);
