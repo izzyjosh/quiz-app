@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { quizService } from "../services/question.services";
+import { questionService } from "../services/question.services";
 import { CreateQuestionDTO } from "../schemas/question.schemas";
 import { success } from "zod";
 import { SuccessResponse } from "../utils/responses";
@@ -10,7 +10,7 @@ class QuestionController {
       const quizId = req.params.quizId as string;
       const body: CreateQuestionDTO = (req as any).validatedBody;
 
-      const response = await quizService.createQuestion(body, quizId);
+      const response = await questionService.createQuestion(body, quizId);
       res.status(201).json(
         SuccessResponse({
           message: "Question created successfully",
@@ -25,7 +25,7 @@ class QuestionController {
   async getQuestion(req: Request, res: Response, next: NextFunction) {
     try {
       const questionId = req.params.questionId as string;
-      const response = await quizService.getQuestion(questionId);
+      const response = await questionService.getQuestion(questionId);
       res.status(200).json(
         SuccessResponse({
           message: "Question retrieved successfully",
@@ -40,7 +40,7 @@ class QuestionController {
   async getAllQuestions(req: Request, res: Response, next: NextFunction) {
     try {
       const quizId = req.params.quizId as string;
-      const response = await quizService.getAllQuestions(quizId);
+      const response = await questionService.getAllQuestions(quizId);
       res.status(200).json(
         SuccessResponse({
           message: "Questions retrieved successfully",

@@ -15,7 +15,7 @@ import { Submission } from "./submission.model";
 @Entity("participants")
 export class Participant {
   @PrimaryGeneratedColumn("uuid")
-  id!: number;
+  id!: string;
 
   @ManyToMany(() => User, (user) => user.participants)
   @JoinColumn({ name: "userId" })
