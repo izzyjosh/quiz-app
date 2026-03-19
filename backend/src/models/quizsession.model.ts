@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -16,7 +17,11 @@ export class QuizSession {
   id!: number;
 
   @ManyToOne(() => Quiz)
+  @JoinColumn({ name: "quizId" })
   quiz!: Quiz;
+
+  @Column()
+  quizId!: string;
 
   @Column({ default: "waiting" })
   status!: "waiting" | "started" | "finished";
@@ -25,7 +30,10 @@ export class QuizSession {
   currentQuestionIndex!: number;
 
   @Column({ type: "timestamp", nullable: true })
-  startTime!: Date;
+  startTime?: Date;
+
+  @Column({ type: "timestamp", nullable: true })
+  scheduledStartTime?: Date;
 
   @OneToMany(() => Participant, (p) => p.quizSession)
   participants!: Participant[];

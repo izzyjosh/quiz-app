@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -17,10 +18,18 @@ export class Participant {
   id!: number;
 
   @ManyToMany(() => User, (user) => user.participants)
+  @JoinColumn({ name: "userId" })
   user!: User;
 
+  @Column()
+  userId!: string;
+
   @ManyToOne(() => QuizSession, (quizSession) => quizSession.participants)
+  @JoinColumn({ name: "quizSessionId" })
   quizSession!: QuizSession;
+
+  @Column()
+  quizSessionId!: string;
 
   @Column({ default: 0 })
   score!: number;

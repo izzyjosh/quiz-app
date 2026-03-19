@@ -13,7 +13,7 @@ import { Question } from "./question.model";
 @Entity("quizzes")
 export class Quiz {
   @PrimaryGeneratedColumn("uuid")
-  id!: number;
+  id!: string;
 
   @Column()
   title!: string;

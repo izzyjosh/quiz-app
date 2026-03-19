@@ -12,3 +12,15 @@ quizRouter.post(
   validateRequest(createQuizSchema),
   (req, res, next) => quizController.createQuiz(req, res, next),
 );
+
+quizRouter.get("/", authMiddleware, (req, res, next) =>
+  quizController.getAllQuizzes(req, res, next),
+);
+
+quizRouter.get("/:quizId", authMiddleware, (req, res, next) =>
+  quizController.getQuiz(req, res, next),
+);
+
+quizRouter.delete("/:quizId", authMiddleware, (req, res, next) =>
+  quizController.deleteQuiz(req, res, next),
+);

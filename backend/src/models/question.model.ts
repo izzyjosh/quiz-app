@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -11,7 +12,7 @@ import { Option } from "./option.model";
 @Entity("questions")
 export class Question {
   @PrimaryGeneratedColumn("uuid")
-  id!: number;
+  id!: string;
 
   @Column()
   text!: string;
@@ -20,7 +21,11 @@ export class Question {
   order!: number;
 
   @ManyToOne(() => Quiz, (quiz) => quiz.questions, { onDelete: "CASCADE" })
+  @JoinColumn({ name: "quizId" })
   quiz!: Quiz;
+
+  @Column()
+  quizId!: string;
 
   @OneToMany(() => Option, (option) => option.question)
   options!: Option[];

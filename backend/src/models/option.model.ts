@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { Question } from "./question.model";
 
 @Entity("options")
@@ -15,5 +21,9 @@ export class Option {
   @ManyToOne(() => Question, (question) => question.options, {
     onDelete: "CASCADE",
   })
+  @JoinColumn({ name: "questionId" })
   question!: Question;
+
+  @Column()
+  questionId!: string;
 }

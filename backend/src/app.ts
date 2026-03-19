@@ -15,6 +15,11 @@ import helmet from "helmet";
 import { AppDataSource } from "./config/datasource";
 import { authRouter } from "./routes/auth.routes";
 import { quizRouter } from "./routes/quiz.routes";
+import { questionRouter } from "./routes/question.routes";
+import { optionRouter } from "./routes/option.routes";
+import { sesssionRouter } from "./routes/quizsession.routes";
+import { submissionRouter } from "./routes/submission.routes";
+import { autoActivateSessions } from "./utils/session-scheduler";
 
 const app = express();
 
@@ -54,6 +59,10 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/quizzes", quizRouter);
+app.use("/api/quizzes/:quizId", questionRouter);
+app.use("/api/quizzes/:quizId/questions/:questionId", optionRouter);
+app.use("/api/sessions", sesssionRouter);
+app.use("/api/submissions", submissionRouter);
 
 // Middlewares
 
@@ -71,6 +80,10 @@ console.log("Starting server...");
     app.listen(app.get("port"), () => {
       sysLogger.info(`Server is running on port ${app.get("port")}`);
     });
+
+    // Start session auto-activation scheduler (runs every minute)
+    setInterval(autoActivateSessions, 60 * 1000);
+    sysLogger.info("Session auto-activation scheduler started");
   } catch (e) {
     sysLogger.error(`An error occurred while starting the server: ${e}`);
   }

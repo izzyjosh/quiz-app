@@ -27,7 +27,7 @@ export class Submission {
   question!: Question;
 
   @ManyToOne(() => Option, { nullable: true })
-  selectedAnswer!: Option;
+  selectedAnswer?: Option;
 
   @Column({ default: false })
   isCorrect!: boolean;
