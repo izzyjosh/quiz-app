@@ -12,6 +12,8 @@ import rateLimit from "express-rate-limit";
 import compression from "compression";
 import logger from "morgan";
 import helmet from "helmet";
+import http from "http";
+import { Server } from "socket.io";
 import { AppDataSource } from "./config/datasource";
 import { authRouter } from "./routes/auth.routes";
 import { quizRouter } from "./routes/quiz.routes";
@@ -20,6 +22,7 @@ import { optionRouter } from "./routes/option.routes";
 import { sesssionRouter } from "./routes/quizsession.routes";
 import { submissionRouter } from "./routes/submission.routes";
 import { autoActivateSessions } from "./utils/session-scheduler";
+import "./utils/socket"; // Load WebSocket event handlers
 
 const app = express();
 
@@ -69,7 +72,12 @@ app.use("/api/submissions", submissionRouter);
 app.use(NotFoundErrorHandler);
 app.use(RequestErrorHandler);
 
-console.log("Starting server...");
+const server = http.createServer(app);
+export const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
 
 // Start server using IIFE
 (async () => {
@@ -77,8 +85,8 @@ console.log("Starting server...");
     await AppDataSource.initialize();
     sysLogger.info("Database connected successfully");
 
-    app.listen(app.get("port"), () => {
-      sysLogger.info(`Server is running on port ${app.get("port")}`);
+    server.listen(app.get("port"), () => {
+      sysLogger.info(`Server + socket is running on port ${app.get("port")}`);
     });
 
     // Start session auto-activation scheduler (runs every minute)

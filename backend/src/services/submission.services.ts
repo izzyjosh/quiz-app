@@ -7,17 +7,19 @@ import { NotFoundError } from "../utils/api.errors";
 import { participantService } from "./participant.services";
 import { questionService } from "./question.services";
 import { optionService } from "./option.services";
+import { io } from "../app";
 
 /**
  * SubmissionService handles recording participant answers
  * Each submission represents ONE answer to ONE question by ONE participant
  * A participant can have multiple submissions (one per question)
+ * Emits real-time feedback to all participants in the session via WebSocket
  */
 class SubmissionService {
   private submissionRepository = AppDataSource.getRepository(Submission);
 
   async createSubmission(data: CreateSubmissionDTO): Promise<Submission> {
-    // Fetch participant
+    // Fetch participant with quiz session
     const participant = await participantService.getParticipant(
       data.participantId,
     );
@@ -64,6 +66,19 @@ class SubmissionService {
       data.participantId,
       totalScore,
     );
+
+    // Emit real-time submission feedback to all participants in the session
+    // This allows live updates of answers and scores across the room
+    const sessionId = participant.quizSessionId;
+    io.to(`session-${sessionId}`).emit("submissionFeedback", {
+      participantId: data.participantId,
+      questionId: data.questionId,
+      isCorrect: isCorrect,
+      pointsEarned: pointsEarned,
+      updatedScore: totalScore,
+      totalSubmissions: allSubmissions.length,
+      timestamp: new Date(),
+    });
 
     return savedSubmission;
   }
