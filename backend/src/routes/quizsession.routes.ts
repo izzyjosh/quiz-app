@@ -12,3 +12,15 @@ sesssionRouter.post(
   validateRequest(createQuizSessionSchema),
   (req, res, next) => quizSessionController.startSession(req, res, next),
 );
+
+sesssionRouter.post("/:sessionId/activate", authMiddleware, (req, res, next) =>
+  quizSessionController.activateSession(req, res, next),
+);
+
+sesssionRouter.post("/:sessionId/end", authMiddleware, (req, res, next) =>
+  quizSessionController.endSession(req, res, next),
+);
+
+sesssionRouter.post("/:sessionId/join", authMiddleware, (req, res, next) =>
+  quizSessionController.joinSession(req, res, next),
+);

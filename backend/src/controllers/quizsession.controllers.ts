@@ -1,15 +1,77 @@
 import { NextFunction, Request, Response } from "express";
 import { quizSessionService } from "../services/quiz-session.serverices";
+import { SuccessResponse } from "../utils/responses";
 
 class QuizSessionController {
   async startSession(req: Request, res: Response, next: NextFunction) {
     try {
       const body = (req as any).validatedBody;
-      const response = quizSessionService.startSession(body);
-      res.status(200).json({
-        message: "Quiz session started successfully",
-        data: response,
-      });
+      const { id: userId } = (req as any).user;
+      
+      // Add creator info to the body
+      const sessionData = {
+        ...body,
+        createdByUserId: userId,
+      };
+      
+      const response = await quizSessionService.startSession(sessionData);
+      res.status(200).json(
+        SuccessResponse({
+          message: "Quiz session started successfully",
+          data: response,
+        }),
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async joinSession(req: Request, res: Response, next: NextFunction) {
+    try {
+      const sessionId = req.params.sessionId as string;
+      const { id: userId } = (req as any).user;
+      const response = await quizSessionService.joinSession(sessionId, userId);
+      res.status(200).json(
+        SuccessResponse({
+          message: "Successfully joined quiz session",
+          data: response,
+        }),
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async activateSession(req: Request, res: Response, next: NextFunction) {
+    try {
+      const sessionId = req.params.sessionId as string;
+      const { id: userId } = (req as any).user;
+      const response = await quizSessionService.activateSession(
+        sessionId,
+        userId,
+      );
+      res.status(200).json(
+        SuccessResponse({
+          message: "Quiz session activated successfully",
+          data: response,
+        }),
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async endSession(req: Request, res: Response, next: NextFunction) {
+    try {
+      const sessionId = req.params.sessionId as string;
+      const { id: userId } = (req as any).user;
+      const response = await quizSessionService.endSession(sessionId, userId);
+      res.status(200).json(
+        SuccessResponse({
+          message: "Quiz session ended successfully",
+          data: response,
+        }),
+      );
     } catch (err) {
       next(err);
     }

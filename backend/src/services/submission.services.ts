@@ -1,13 +1,13 @@
 import { AppDataSource } from "../config/datasource";
 import { Submission } from "../models/submission.model";
-import { Question } from "../models/question.model";
-import { Option } from "../models/option.model";
 import { CreateSubmissionDTO } from "../schemas/submission.schemas";
-import { NotFoundError } from "../utils/api.errors";
+import { NotFoundError, BadRequestError } from "../utils/api.errors";
 import { participantService } from "./participant.services";
 import { questionService } from "./question.services";
 import { optionService } from "./option.services";
 import { io } from "../app";
+import { leaderboardService } from "./leaderboard.services";
+import { quizSessionService } from "./quiz-session.serverices";
 
 /**
  * SubmissionService handles recording participant answers
@@ -17,30 +17,59 @@ import { io } from "../app";
  */
 class SubmissionService {
   private submissionRepository = AppDataSource.getRepository(Submission);
+  private leaderboardBroadcastTimers = new Map<string, NodeJS.Timeout>();
 
-  async createSubmission(data: CreateSubmissionDTO): Promise<Submission> {
-    // Fetch participant with quiz session
-    const participant = await participantService.getParticipant(
-      data.participantId,
+  private isUniqueViolationError(error: unknown): boolean {
+    return (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code?: string }).code === "23505"
     );
+  }
 
-    // Fetch question
-    const question = await questionService.getQuestion(data.questionId);
-
-    // Fetch selected answer (if provided)
-    let selectedAnswer: Option | null = null;
-    let isCorrect = false;
-    let pointsEarned = 0;
-
-    if (data.selectedAnswerId) {
-      selectedAnswer = await optionService.getOption(data.selectedAnswerId);
-
-      // Check if answer is correct
-      isCorrect = selectedAnswer.isCorrect;
-      pointsEarned = isCorrect ? 1 : 0; // Award 1 point for correct answer
+  private scheduleLeaderboardBroadcast(sessionId: string): void {
+    if (this.leaderboardBroadcastTimers.has(sessionId)) {
+      return;
     }
 
-    // Create submission
+    const timer = setTimeout(async () => {
+      try {
+        const leaderboard = await leaderboardService.getLeaderboard(sessionId);
+        io.to(`session-${sessionId}`).emit("leaderboardUpdate", {
+          leaderboard,
+        });
+      } finally {
+        this.leaderboardBroadcastTimers.delete(sessionId);
+      }
+    }, 250);
+
+    this.leaderboardBroadcastTimers.set(sessionId, timer);
+  }
+
+  async createSubmission(data: CreateSubmissionDTO): Promise<Submission> {
+    // Parallel fetch: Get participant, question, and existing submission simultaneously
+    const [participant, question, selectedAnswer] = await Promise.all([
+      participantService.getParticipant(data.participantId),
+      questionService.getQuestion(data.questionId),
+      data.selectedAnswerId
+        ? optionService.getOption(data.selectedAnswerId)
+        : Promise.resolve(null),
+    ]);
+
+    // Validate session is still active (not finished)
+    const session = await quizSessionService.getSession(
+      participant.quizSessionId,
+    );
+    if (session.status === "finished") {
+      throw new BadRequestError("Quiz session has ended");
+    }
+
+    // Determine correctness and points
+    const isCorrect = selectedAnswer?.isCorrect || false;
+    const pointsEarned = isCorrect ? 1 : 0;
+
+    // Create submission using database transaction for atomicity
     const submission = new Submission();
     submission.participant = participant;
     submission.question = question;
@@ -50,35 +79,52 @@ class SubmissionService {
     submission.isCorrect = isCorrect;
     submission.pointsEarned = pointsEarned;
 
-    const savedSubmission = await this.submissionRepository.save(submission);
+    let savedSubmission: Submission;
+    try {
+      savedSubmission = await this.submissionRepository.save(submission);
+    } catch (error) {
+      if (this.isUniqueViolationError(error)) {
+        throw new BadRequestError(
+          "You have already answered this question. Answers cannot be changed.",
+        );
+      }
+      throw error;
+    }
 
-    // Calculate and update participant score
-    const allSubmissions = await this.submissionRepository.find({
-      where: { participant: { id: data.participantId as any } },
-    });
-
-    const totalScore = allSubmissions.reduce(
-      (sum, sub) => sum + sub.pointsEarned,
-      0,
+    // Keep leaderboard and rank in Redis sorted set to reduce DB pressure
+    await leaderboardService.ensureMember(
+      participant.quizSessionId,
+      participant.id,
     );
+    if (isCorrect) {
+      await leaderboardService.incrementScore(
+        participant.quizSessionId,
+        participant.id,
+        1,
+      );
+    }
 
-    await participantService.updateParticipantScore(
-      data.participantId,
-      totalScore,
-    );
+    const [totalScore, userRank] = await Promise.all([
+      leaderboardService.getUserScore(participant.quizSessionId, participant.id),
+      leaderboardService.getUserRank(participant.quizSessionId, participant.id),
+    ]);
 
-    // Emit real-time submission feedback to all participants in the session
-    // This allows live updates of answers and scores across the room
-    const sessionId = participant.quizSessionId;
-    io.to(`session-${sessionId}`).emit("submissionFeedback", {
-      participantId: data.participantId,
+    // Persist participant score for historical/query consistency
+    await participantService.updateParticipantScore(data.participantId, totalScore);
+
+    // Send answer verification result and rank to ONLY this participant
+    io.to(`participant-${participant.userId}`).emit("submissionFeedback", {
       questionId: data.questionId,
       isCorrect: isCorrect,
       pointsEarned: pointsEarned,
       updatedScore: totalScore,
-      totalSubmissions: allSubmissions.length,
-      timestamp: new Date(),
+      userRank,
     });
+
+    // Broadcast leaderboard to all participants in session (only if answer was correct)
+    if (isCorrect) {
+      this.scheduleLeaderboardBroadcast(participant.quizSessionId);
+    }
 
     return savedSubmission;
   }

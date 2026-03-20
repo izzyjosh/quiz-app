@@ -2,8 +2,9 @@ import { AppDataSource } from "../config/datasource";
 import { QuizSession } from "../models/quizsession.model";
 import { Participant } from "../models/participant.model";
 import { CreateQuizSessionDTO } from "../schemas/quizsession.schemas";
-import { NotFoundError } from "../utils/api.errors";
+import { NotFoundError, ForbiddenError } from "../utils/api.errors";
 import { participantService } from "./participant.services";
+import { leaderboardService } from "./leaderboard.services";
 
 class QuizSessionService {
   private quizSessionRepository = AppDataSource.getRepository(QuizSession);
@@ -15,6 +16,7 @@ class QuizSessionService {
     session.currentQuestionIndex = data.currentQuestionIndex;
     session.startTime = data.startTime || undefined;
     session.scheduledStartTime = data.scheduledStartTime || undefined;
+    session.createdByUserId = data.createdByUserId;
     return await this.quizSessionRepository.save(session);
   }
 
@@ -24,16 +26,62 @@ class QuizSessionService {
       throw new NotFoundError("Quiz session has already finished");
     }
 
-    return await participantService.createParticipant(userId, session.id as any);
+    const participant = await participantService.createParticipant(
+      userId,
+      session.id as any,
+    );
+
+    await leaderboardService.ensureMember(
+      String(session.id),
+      String(participant.id),
+    );
+
+    return participant;
   }
 
-  async activateSession(sessionId: string): Promise<QuizSession> {
+  async activateSession(
+    sessionId: string,
+    userId: string,
+  ): Promise<QuizSession> {
     const session = await this.getSession(sessionId);
     if (session.status !== "waiting") {
       throw new NotFoundError("Quiz session has already started");
     }
+
+    // Check if user is the creator OR if scheduled time has passed
+    const now = new Date();
+    const isCreator = session.createdByUserId === userId;
+    const isScheduledTimeReached =
+      session.scheduledStartTime && session.scheduledStartTime <= now;
+
+    if (!isCreator && !isScheduledTimeReached) {
+      throw new ForbiddenError(
+        "Only the session creator can activate this session, or wait until the scheduled time",
+      );
+    }
+
     session.status = "started";
     session.startTime = new Date();
+
+    await leaderboardService.clear(session.id as any); // Clear leaderboard at session start
+
+    return await this.quizSessionRepository.save(session);
+  }
+
+  /**
+   * Internal method for automatic session activation by scheduler
+   * Bypasses user authorization checks
+   * Used when scheduledStartTime is reached
+   */
+  async autoActivateSession(sessionId: string): Promise<QuizSession> {
+    const session = await this.getSession(sessionId);
+    if (session.status !== "waiting") {
+      return session;
+    }
+
+    session.status = "started";
+    session.startTime = new Date();
+    await leaderboardService.clear(session.id as any); // Clear leaderboard at session start
     return await this.quizSessionRepository.save(session);
   }
 
@@ -48,9 +96,16 @@ class QuizSessionService {
     return session;
   }
 
-  async endSession(sessionId: string): Promise<QuizSession> {
+  async endSession(sessionId: string, userId: string): Promise<QuizSession> {
     const session = await this.getSession(sessionId);
+
+    // Only the creator can end the session
+    if (session.createdByUserId !== userId) {
+      throw new ForbiddenError("Only the session creator can end this session");
+    }
+
     session.status = "finished";
+    await leaderboardService.clear(session.id as any); // Clear leaderboard at session end
     return await this.quizSessionRepository.save(session);
   }
 

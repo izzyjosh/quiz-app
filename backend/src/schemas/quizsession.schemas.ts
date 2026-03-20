@@ -6,6 +6,7 @@ export const createQuizSessionSchema = z.object({
   currentQuestionIndex: z.number().int().nonnegative().default(0),
   startTime: z.date().nullable().default(null),
   scheduledStartTime: z.date().nullable().optional(),
+  createdByUserId: z.string().min(1, "Creator user ID is required"),
 });
 
 export type CreateQuizSessionDTO = z.infer<typeof createQuizSessionSchema>;

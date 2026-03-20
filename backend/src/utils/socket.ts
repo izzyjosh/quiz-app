@@ -25,11 +25,24 @@ io.on("connection", (socket) => {
   });
 
   /**
+   * joinParticipant - User joins their private room for personal feedback/rank updates
+   */
+  socket.on("joinParticipant", (userId) => {
+    console.log(`Client ${socket.id} joining participant room: ${userId}`);
+    socket.join(`participant-${userId}`);
+  });
+
+  /**
    * leaveSession - User leaves a quiz session room
    */
   socket.on("leaveSession", (sessionId) => {
     console.log(`Client ${socket.id} leaving session: ${sessionId}`);
     socket.leave(`session-${sessionId}`);
+  });
+
+  socket.on("leaveParticipant", (userId) => {
+    console.log(`Client ${socket.id} leaving participant room: ${userId}`);
+    socket.leave(`participant-${userId}`);
   });
 
   /**

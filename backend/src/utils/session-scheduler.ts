@@ -1,9 +1,11 @@
 import { AppDataSource } from "../config/datasource";
 import { QuizSession } from "../models/quizsession.model";
+import { quizSessionService } from "../services/quiz-session.serverices";
 
 /**
  * Automatically activate quiz sessions when their scheduled time reaches
  * This function should be called periodically (e.g., every minute)
+ * Uses the quizSessionService.autoActivateSession for proper session handling
  */
 export const autoActivateSessions = async (): Promise<void> => {
   try {
@@ -23,9 +25,8 @@ export const autoActivateSessions = async (): Promise<void> => {
         session.scheduledStartTime <= now &&
         session.status === "waiting"
       ) {
-        session.status = "started";
-        session.startTime = now;
-        await quizSessionRepository.save(session);
+        // Use the service to activate the session
+        await quizSessionService.autoActivateSession(session.id as any);
         console.log(`Auto-activated session: ${session.id}`);
       }
     }

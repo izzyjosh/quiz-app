@@ -22,7 +22,6 @@ import { optionRouter } from "./routes/option.routes";
 import { sesssionRouter } from "./routes/quizsession.routes";
 import { submissionRouter } from "./routes/submission.routes";
 import { autoActivateSessions } from "./utils/session-scheduler";
-import "./utils/socket"; // Load WebSocket event handlers
 
 const app = express();
 
