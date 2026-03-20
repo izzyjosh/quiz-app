@@ -22,6 +22,13 @@ class QuestionService {
     return question;
   }
 
+  async getQuestionsAndOptions(quizId: string): Promise<Question[]> {
+    return this.questionRepo.find({
+      where: { quizId },
+      relations: ["options"],
+    });
+  }
+
   async getAllQuestions(quizId: string): Promise<Question[]> {
     return this.questionRepo.findBy({ quizId });
   }

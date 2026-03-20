@@ -20,6 +20,9 @@ export class Question {
   @Column()
   order!: number;
 
+  @Column({ default: 30 })
+  timeLimit!: number; // seconds
+
   @ManyToOne(() => Quiz, (quiz) => quiz.questions, { onDelete: "CASCADE" })
   @JoinColumn({ name: "quizId" })
   quiz!: Quiz;
