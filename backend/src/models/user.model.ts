@@ -16,10 +16,13 @@ export class User {
   @Column({ unique: true })
   email!: string;
 
+  @Column({ nullable: true })
+  avatar!: string;
+
   @Column()
   password!: string;
 
-  @Column({ default: "user" })
+  @Column({ unique: true })
   username!: string;
 
   @OneToMany(() => Quiz, (quiz) => quiz.user)

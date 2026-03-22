@@ -10,8 +10,6 @@ interface SignUpAvatarStepProps {
   selectedAvatar: string;
   onCategoryChange: (value: AvatarCategory) => void;
   onAvatarChange: (value: string) => void;
-  onBack: () => void;
-  onCreateAccount: () => void;
 }
 
 export default function SignUpAvatarStep({
@@ -20,8 +18,6 @@ export default function SignUpAvatarStep({
   selectedAvatar,
   onCategoryChange,
   onAvatarChange,
-  onBack,
-  onCreateAccount,
 }: SignUpAvatarStepProps) {
   return (
     <section className="space-y-5">
@@ -36,7 +32,7 @@ export default function SignUpAvatarStep({
 
       <div className="rounded-xl border border-slate-700 bg-slate-800/70 p-4">
         <div className="flex items-center gap-3">
-          <InitialBadge label={selectedAvatar} />
+          <InitialBadge label={selectedAvatar} category={category} />
           <div>
             <p className="text-lg font-bold text-slate-100">
               {username || "newuser"}
@@ -76,29 +72,12 @@ export default function SignUpAvatarStep({
               ].join(" ")}
             >
               <div className="mb-2">
-                <InitialBadge label={avatar} />
+                <InitialBadge label={avatar} category={category} />
               </div>
               <p className="text-xs font-semibold text-slate-200">{avatar}</p>
             </button>
           );
         })}
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center justify-center rounded-xl border border-slate-700 px-5 py-3 font-semibold text-slate-100 transition hover:border-slate-500"
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={onCreateAccount}
-          className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 via-violet-500 to-cyan-500 px-5 py-3 font-semibold text-white transition hover:opacity-90"
-        >
-          Create account
-        </button>
       </div>
     </section>
   );

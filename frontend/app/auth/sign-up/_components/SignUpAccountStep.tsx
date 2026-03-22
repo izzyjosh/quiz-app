@@ -17,7 +17,6 @@ interface SignUpAccountStepProps {
   onPasswordChange: (value: string) => void;
   onConfirmPasswordChange: (value: string) => void;
   onTogglePassword: () => void;
-  onContinue: () => void;
 }
 
 export default function SignUpAccountStep({
@@ -32,7 +31,6 @@ export default function SignUpAccountStep({
   onPasswordChange,
   onConfirmPasswordChange,
   onTogglePassword,
-  onContinue,
 }: SignUpAccountStepProps) {
   return (
     <section className="space-y-5">
@@ -93,14 +91,6 @@ export default function SignUpAccountStep({
           errorText={confirmPasswordError}
         />
       </div>
-
-      <button
-        type="button"
-        onClick={onContinue}
-        className="inline-flex w-full items-center justify-center rounded-xl border border-slate-600 bg-slate-900 px-5 py-3 text-lg font-semibold text-white transition hover:border-indigo-400/60"
-      >
-        Continue
-      </button>
     </section>
   );
 }

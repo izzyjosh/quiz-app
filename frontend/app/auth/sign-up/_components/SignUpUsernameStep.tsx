@@ -10,8 +10,6 @@ interface SignUpUsernameStepProps {
   suggestions: string[];
   onUsernameChange: (value: string) => void;
   onSuggestionClick: (value: string) => void;
-  onBack: () => void;
-  onContinue: () => void;
 }
 
 export default function SignUpUsernameStep({
@@ -21,8 +19,6 @@ export default function SignUpUsernameStep({
   suggestions,
   onUsernameChange,
   onSuggestionClick,
-  onBack,
-  onContinue,
 }: SignUpUsernameStepProps) {
   return (
     <section className="space-y-5">
@@ -67,23 +63,6 @@ export default function SignUpUsernameStep({
       <div className="rounded-xl border border-slate-700 bg-slate-800/70 p-4 text-sm text-slate-300">
         Usernames are public and permanent. You can change your display name
         later, but not your username.
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center justify-center rounded-xl border border-slate-700 px-5 py-3 font-semibold text-slate-100 transition hover:border-slate-500"
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={onContinue}
-          className="inline-flex items-center justify-center rounded-xl border border-indigo-400/50 bg-indigo-500/10 px-5 py-3 font-semibold text-indigo-100 transition hover:bg-indigo-500/20"
-        >
-          Continue
-        </button>
       </div>
 
       <p className="text-center text-sm text-slate-400">

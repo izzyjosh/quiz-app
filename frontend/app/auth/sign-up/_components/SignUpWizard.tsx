@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { signUp } from "@/lib/api/auth";
 
 import AuthCard from "@/components/ui/AuthCard";
 import StepIndicator from "@/components/ui/StepIndicator";
@@ -11,8 +14,10 @@ import type { AvatarCategory } from "./sign-up.constants";
 import { signUpSteps, usernameSuggestions } from "./sign-up.constants";
 
 export default function SignUpWizard() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -89,13 +94,65 @@ export default function SignUpWizard() {
     setStep(3);
   };
 
-  const handleCreateAccount = () => {
+  const handleCreateAccount = async () => {
     if (!selectedAvatar.trim()) {
       return;
     }
 
-    // TODO: connect to real signup action
+    setIsSubmitting(true);
+    try {
+      const response = await signUp({
+        username: username.trim(),
+        email: email.trim(),
+        password,
+        avatar: selectedAvatar,
+      });
+
+      const token = response?.data?.token;
+      if (token) {
+        localStorage.setItem("accessToken", token);
+      }
+
+      toast.success("Account created successfully!");
+
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 500);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create account";
+
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const handleBack = () => {
+    if (isSubmitting || step === 1) {
+      return;
+    }
+
+    setStep((currentStep) => currentStep - 1);
+  };
+
+  const handlePrimaryAction = () => {
+    if (step === 1) {
+      handleContinueFromAccount();
+      return;
+    }
+
+    if (step === 2) {
+      handleContinueFromUsername();
+      return;
+    }
+
+    void handleCreateAccount();
+  };
+
+  const showBackButton = step > 1;
+  const primaryButtonLabel = step === 3 ? "Create account" : "Continue";
 
   return (
     <AuthCard className="mx-auto w-full max-w-3xl">
@@ -133,7 +190,6 @@ export default function SignUpWizard() {
               }
             }}
             onTogglePassword={() => setShowPassword((value) => !value)}
-            onContinue={handleContinueFromAccount}
           />
         ) : null}
 
@@ -155,8 +211,6 @@ export default function SignUpWizard() {
                 setUsernameError(undefined);
               }
             }}
-            onBack={() => setStep(1)}
-            onContinue={handleContinueFromUsername}
           />
         ) : null}
 
@@ -167,10 +221,37 @@ export default function SignUpWizard() {
             selectedAvatar={selectedAvatar}
             onCategoryChange={setCategory}
             onAvatarChange={setSelectedAvatar}
-            onBack={() => setStep(2)}
-            onCreateAccount={handleCreateAccount}
           />
         ) : null}
+
+        <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+          {showBackButton ? (
+            <button
+              type="button"
+              onClick={handleBack}
+              disabled={isSubmitting}
+              className="inline-flex items-center justify-center rounded-xl border border-slate-700 px-5 py-3 font-semibold text-slate-100 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Back
+            </button>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={handlePrimaryAction}
+            disabled={isSubmitting}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-400/50 bg-indigo-500/10 px-5 py-3 font-semibold text-indigo-100 transition hover:bg-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+          >
+            {step === 3 && isSubmitting ? (
+              <>
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-indigo-100 border-r-transparent" />
+                <span className="sr-only">Creating account</span>
+              </>
+            ) : (
+              primaryButtonLabel
+            )}
+          </button>
+        </div>
       </div>
     </AuthCard>
   );

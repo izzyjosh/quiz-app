@@ -35,7 +35,7 @@ export class QuizSession {
   @Column({ type: "timestamp", nullable: true })
   scheduledStartTime?: Date;
 
-  @Column()
+  @Column({ nullable: true })
   createdByUserId!: string;
 
   @OneToMany(() => Participant, (p) => p.quizSession)

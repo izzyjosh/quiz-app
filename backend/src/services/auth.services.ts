@@ -9,7 +9,7 @@ class AuthService {
   private userRepo = AppDataSource.getRepository(User);
 
   async register(data: SignupInput) {
-    const { username, email, password } = data;
+    const { username, email, password, avatar } = data;
     // Check if user already exists
     const existing = await this.userRepo.findOneBy({ email });
     if (existing) throw new BadRequestError("Email already in use");
