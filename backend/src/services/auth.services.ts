@@ -17,7 +17,7 @@ class AuthService {
     // Hash password
     const hashed = await hashPassword(password);
 
-    const user = this.userRepo.create({ username, email, password: hashed });
+    const user = this.userRepo.create({ username, email, password: hashed, avatar });
     await this.userRepo.save(user);
 
     // Generate JWT
@@ -35,7 +35,7 @@ class AuthService {
     if (!isValid) throw new BadRequestError("Invalid credentials");
 
     const token = createToken(user);
-    const { password: _, ...userData } = user;
+    const { password: _, ...userData } = user; // Exclude passwordS
     return { token, user: userData };
   }
 }
