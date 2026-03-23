@@ -32,7 +32,7 @@ export default function SignUpAvatarStep({
 
       <div className="rounded-xl border border-slate-700 bg-slate-800/70 p-4">
         <div className="flex items-center gap-3">
-          <InitialBadge label={selectedAvatar} category={category} />
+          <InitialBadge label={selectedAvatar} />
           <div>
             <p className="text-lg font-bold text-slate-100">
               {username || "newuser"}
@@ -72,7 +72,7 @@ export default function SignUpAvatarStep({
               ].join(" ")}
             >
               <div className="mb-2">
-                <InitialBadge label={avatar} category={category} />
+                <InitialBadge label={avatar} />
               </div>
               <p className="text-xs font-semibold text-slate-200">{avatar}</p>
             </button>
