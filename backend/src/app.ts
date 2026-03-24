@@ -22,6 +22,7 @@ import { optionRouter } from "./routes/option.routes";
 import { sesssionRouter } from "./routes/quizsession.routes";
 import { submissionRouter } from "./routes/submission.routes";
 import { autoActivateSessions } from "./utils/session-scheduler";
+import { userRouter } from "./routes/user.routes";
 
 const app = express();
 
@@ -65,6 +66,7 @@ app.use("/api/quizzes/:quizId", questionRouter);
 app.use("/api/quizzes/:quizId/questions/:questionId", optionRouter);
 app.use("/api/sessions", sesssionRouter);
 app.use("/api/submissions", submissionRouter);
+app.use("/api/users", userRouter);
 
 // Middlewares
 

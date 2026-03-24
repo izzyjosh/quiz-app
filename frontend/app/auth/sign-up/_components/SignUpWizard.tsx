@@ -12,6 +12,7 @@ import SignUpAvatarStep from "./SignUpAvatarStep";
 import SignUpUsernameStep from "./SignUpUsernameStep";
 import type { AvatarCategory } from "./sign-up.constants";
 import { signUpSteps, usernameSuggestions } from "./sign-up.constants";
+import { useUsernameCheck, statusType } from "@/hooks/usernameCheck";
 
 export default function SignUpWizard() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function SignUpWizard() {
     string | undefined
   >();
   const [usernameError, setUsernameError] = useState<string | undefined>();
+  const { status } = useUsernameCheck<statusType>(username);
 
   const isUsernameAvailable = username.trim().length >= 4;
 
