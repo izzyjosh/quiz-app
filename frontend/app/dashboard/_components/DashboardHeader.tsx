@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 
 import Logo from "@/components/ui/logo";
 import DashboardMenuItem from "./DashboardMenuItem";
+import { useUser } from "@/context/userContext";
 
 export default function DashboardHeader() {
   const router = useRouter();
+  const user = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const username = user?.username || "Player";
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -63,7 +66,7 @@ export default function DashboardHeader() {
           >
             <span className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border border-indigo-300/25 bg-indigo-500/10 sm:h-10 sm:w-10">
               <img
-                src="https://api.dicebear.com/9.x/lorelei/svg?seed=apexvector-wolf"
+                src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(username)}`}
                 alt="User avatar"
                 className="h-full w-full object-cover"
               />
@@ -71,7 +74,7 @@ export default function DashboardHeader() {
 
             <span className="flex min-w-0 flex-1 flex-col leading-tight">
               <span className="truncate text-sm font-extrabold text-slate-100 sm:text-lg">
-                apexvector
+                {username}
               </span>
               <span className="truncate text-[10px] font-semibold tracking-wide text-amber-500/90 sm:text-sm">
                 BRONZE · 800 RP

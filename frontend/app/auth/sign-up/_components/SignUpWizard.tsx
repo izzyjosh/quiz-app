@@ -12,7 +12,7 @@ import SignUpAvatarStep from "./SignUpAvatarStep";
 import SignUpUsernameStep from "./SignUpUsernameStep";
 import type { AvatarCategory } from "./sign-up.constants";
 import { signUpSteps, usernameSuggestions } from "./sign-up.constants";
-import { useUsernameCheck, statusType } from "@/hooks/usernameCheck";
+import { useUsernameCheck } from "@/hooks/usernameCheck";
 
 export default function SignUpWizard() {
   const router = useRouter();
@@ -31,9 +31,9 @@ export default function SignUpWizard() {
     string | undefined
   >();
   const [usernameError, setUsernameError] = useState<string | undefined>();
-  const { status } = useUsernameCheck<statusType>(username);
+  const status = useUsernameCheck(username);
 
-  const isUsernameAvailable = username.trim().length >= 4;
+  const isUsernameAvailable = status === "available";
 
   const handleContinueFromAccount = () => {
     const trimmedEmail = email.trim();
@@ -89,6 +89,21 @@ export default function SignUpWizard() {
 
     if (trimmedUsername.length < 4) {
       setUsernameError("Username must be at least 4 characters.");
+      return;
+    }
+
+    if (status === "checking") {
+      setUsernameError("Checking username availability. Please wait.");
+      return;
+    }
+
+    if (status === "taken") {
+      setUsernameError("This username is already taken.");
+      return;
+    }
+
+    if (status === "error") {
+      setUsernameError("Could not verify username availability. Try again.");
       return;
     }
 
@@ -199,6 +214,7 @@ export default function SignUpWizard() {
           <SignUpUsernameStep
             username={username}
             usernameError={usernameError}
+            usernameStatus={status}
             isUsernameAvailable={isUsernameAvailable}
             suggestions={usernameSuggestions}
             onUsernameChange={(value) => {

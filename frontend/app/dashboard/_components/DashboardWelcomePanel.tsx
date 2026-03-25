@@ -1,3 +1,7 @@
+"use client";
+
+import { useUser } from "@/context/userContext";
+
 const stats = [
   { value: "3,206", label: "ONLINE NOW" },
   { value: "5", label: "LIVE SESSIONS" },
@@ -6,13 +10,16 @@ const stats = [
 ];
 
 export default function DashboardWelcomePanel() {
+  const user = useUser();
+  const username = user?.username || "player";
+
   return (
     <section className="space-y-5">
       <div className="rounded-3xl border border-indigo-500/30 bg-slate-900/70 px-4 py-4 shadow-xl shadow-black/25 sm:px-6 sm:py-5">
         <div className="flex items-center gap-3 sm:gap-4">
           <span className="inline-flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border-2 border-indigo-400/60 bg-indigo-500/10 sm:h-16 sm:w-16">
             <img
-              src="https://api.dicebear.com/9.x/lorelei/svg?seed=cyberwizard43-bear"
+              src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(username)}`}
               alt="User avatar"
               className="h-full w-full object-cover"
             />
@@ -20,11 +27,11 @@ export default function DashboardWelcomePanel() {
 
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-extrabold text-slate-100 sm:text-3xl">
-              Welcome, cyberwizard43! <span aria-hidden="true">🎉</span>
+              Welcome, {username}! <span aria-hidden="true">🎉</span>
             </h1>
             <p className="mt-2 truncate text-slate-400">
               Logged in as
-              <span className="font-bold text-cyan-400"> @cyberwizard43</span>
+              <span className="font-bold text-cyan-400"> @{username}</span>
               <span className="text-slate-300"> · Ready to quiz?</span>
             </p>
           </div>

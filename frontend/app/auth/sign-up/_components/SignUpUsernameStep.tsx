@@ -2,10 +2,12 @@ import Link from "next/link";
 
 import AuthInput from "@/components/ui/AuthInput";
 import SelectableChip from "@/components/ui/SelectableChip";
+import type { statusType } from "@/hooks/usernameCheck";
 
 interface SignUpUsernameStepProps {
   username: string;
   usernameError?: string;
+  usernameStatus: statusType;
   isUsernameAvailable: boolean;
   suggestions: string[];
   onUsernameChange: (value: string) => void;
@@ -15,11 +17,26 @@ interface SignUpUsernameStepProps {
 export default function SignUpUsernameStep({
   username,
   usernameError,
+  usernameStatus,
   isUsernameAvailable,
   suggestions,
   onUsernameChange,
   onSuggestionClick,
 }: SignUpUsernameStepProps) {
+  const shouldShowStatus = username.trim().length >= 4;
+  const availabilityHelperText =
+    shouldShowStatus && usernameStatus === "checking"
+      ? "Checking availability..."
+      : shouldShowStatus && isUsernameAvailable
+        ? `${username} is available`
+        : undefined;
+  const availabilityErrorText =
+    shouldShowStatus && usernameStatus === "taken"
+      ? "This username is already taken."
+      : shouldShowStatus && usernameStatus === "error"
+        ? "Could not check username right now."
+        : undefined;
+
   return (
     <section className="space-y-5">
       <div>
@@ -38,10 +55,8 @@ export default function SignUpUsernameStep({
         minLength={4}
         value={username}
         onChange={(e) => onUsernameChange(e.target.value)}
-        helperText={
-          isUsernameAvailable ? `${username} is available` : undefined
-        }
-        errorText={usernameError}
+        helperText={usernameError ? undefined : availabilityHelperText}
+        errorText={usernameError ?? availabilityErrorText}
       />
 
       <div className="space-y-3">

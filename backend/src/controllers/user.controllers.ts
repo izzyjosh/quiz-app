@@ -18,6 +18,31 @@ class UserController {
       next(error);
     }
   }
+
+  async getUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = (req as any).user;
+      const user = await userService.getUserById(userId);
+
+      if (!user) {
+        return res.status(404).json(
+          SuccessResponse({
+            message: "User not found",
+            data: null,
+          }),
+        );
+      }
+
+      res.status(200).json(
+        SuccessResponse({
+          message: "User fetched successfully",
+          data: user,
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const userController = new UserController();

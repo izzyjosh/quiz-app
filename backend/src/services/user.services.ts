@@ -8,6 +8,10 @@ class UserService {
     const user = await this.userRepository.findOneBy({ username });
     return !!user;
   }
+
+  async getUserById(id: string): Promise<User | null> {
+    return this.userRepository.findOneBy({ id });
+  }
 }
 
 export const userService = new UserService();

@@ -28,11 +28,14 @@ export const useUsernameCheck = (username: string) => {
           throw new Error("Network response was not ok");
         }
 
-        const data = await res.json();
+        const payload = await res.json();
+        const exists = Boolean(payload?.data?.exists);
 
-        setStatus(data.available ? "available" : "taken");
+        setStatus(exists ? "taken" : "available");
       } catch (error: any) {
-        if (error?.name === "AbortError") setStatus("error");
+        if (error?.name !== "AbortError") {
+          setStatus("error");
+        }
       }
     }, 500);
 
