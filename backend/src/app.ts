@@ -23,6 +23,7 @@ import { sesssionRouter } from "./routes/quizsession.routes";
 import { submissionRouter } from "./routes/submission.routes";
 import { autoActivateSessions } from "./utils/session-scheduler";
 import { userRouter } from "./routes/user.routes";
+import { authService } from "./services/auth.services";
 
 const app = express();
 
@@ -93,6 +94,10 @@ export const io = new Server(server, {
     // Start session auto-activation scheduler (runs every minute)
     setInterval(autoActivateSessions, 60 * 1000);
     sysLogger.info("Session auto-activation scheduler started");
+
+    // Periodically remove expired/revoked refresh token records.
+    setInterval(() => void authService.cleanupRefreshTokens(), 60 * 60 * 1000);
+    sysLogger.info("Refresh token cleanup scheduler started");
   } catch (e) {
     sysLogger.error(`An error occurred while starting the server: ${e}`);
   }

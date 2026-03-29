@@ -13,3 +13,11 @@ authRouter.post("/register", validateRequest(signupSchema), (req, res, next) =>
 authRouter.post("/login", validateRequest(loginSchema), (req, res, next) =>
   authController.login(req, res, next),
 );
+
+authRouter.post("/refresh-token", (req, res, next) =>
+  authController.refreshToken(req, res, next),
+);
+
+authRouter.post("/logout", (req, res, next) =>
+  authController.logout(req, res, next),
+);

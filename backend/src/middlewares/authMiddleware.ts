@@ -1,32 +1,30 @@
 import { NextFunction } from "express";
 import { UnauthorizedError } from "../utils/api.errors";
-import jwt from "jsonwebtoken";
-import { config } from "../config/config";
-import { z } from "zod";
+import { AppDataSource } from "../config/datasource";
+import { User } from "../models/user.model";
+import { verifyAccessToken } from "../utils/auth";
 
-// JWT Payload Schema
-const JWTPayloadSchema = z.object({
-  id: z.string(),
-  email: z.string().email(),
-});
+const userRepo = AppDataSource.getRepository(User);
 
-type JWTPayload = z.infer<typeof JWTPayloadSchema>;
+export const authMiddleware = async (
+  req: any,
+  res: any,
+  next: NextFunction,
+) => {
+  const token = req.cookies.accessToken as string | undefined;
 
-export const authMiddleware = (req: any, res: any, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return next(new UnauthorizedError("No token provided"));
-  }
-
-  const token = authHeader.split(" ")[1];
   if (!token) {
-    return next(new UnauthorizedError("Invalid token format"));
+    return next(new UnauthorizedError("Invalid token"));
   }
 
   try {
-    const decode: JWTPayload = JWTPayloadSchema.parse(
-      jwt.verify(token, config.jwt.secret),
-    );
+    const decode = verifyAccessToken(token);
+
+    const user = await userRepo.findOneBy({ id: decode.id });
+    if (!user || user.tokenVersion !== decode.tokenVersion) {
+      return next(new UnauthorizedError("Invalid token"));
+    }
+
     req.user = decode;
     next();
   } catch (error) {
