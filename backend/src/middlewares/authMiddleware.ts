@@ -11,7 +11,7 @@ export const authMiddleware = async (
   res: any,
   next: NextFunction,
 ) => {
-  const token = req.cookies.accessToken as string | undefined;
+  const token = req.cookies?.accessToken as string | undefined;
 
   if (!token) {
     return next(new UnauthorizedError("Invalid token"));

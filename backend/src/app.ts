@@ -12,6 +12,7 @@ import rateLimit from "express-rate-limit";
 import compression from "compression";
 import logger from "morgan";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 import http from "http";
 import { Server } from "socket.io";
 import { AppDataSource } from "./config/datasource";
@@ -32,6 +33,7 @@ const corsOrigin = ["http://localhost:3000", "https://localhost:3000"];
 app.use(
   cors({
     origin: corsOrigin,
+    credentials: true,
   }),
 );
 
@@ -49,6 +51,7 @@ app.use(logger("combined"));
 app.set("port", config.port);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(compression());
 
 app.get("/", (req: Request, res: Response) => {

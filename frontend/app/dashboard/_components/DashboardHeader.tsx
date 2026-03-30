@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 
 import Logo from "@/components/ui/logo";
 import DashboardMenuItem from "./DashboardMenuItem";
-import { useUser } from "@/context/userContext";
+import { useAuth } from "@/context/authContext";
 
 export default function DashboardHeader() {
   const router = useRouter();
-  const user = useUser();
+  const auth = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const username = user?.username || "Player";
+  const username = auth.user?.username || "User";
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -41,9 +41,8 @@ export default function DashboardHeader() {
   }, []);
 
   const handleSignOut = () => {
-    localStorage.removeItem("accessToken");
-    setMenuOpen(false);
-    router.push("/auth/sign-in");
+    auth.logout();
+    router.push("/login");
   };
 
   return (

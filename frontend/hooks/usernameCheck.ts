@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 
 export type statusType = "available" | "taken" | "checking" | "error" | "idle";
 
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api";
+
 export const useUsernameCheck = (username: string) => {
   const [status, setStatus] = useState<statusType>("idle");
 
@@ -17,12 +20,9 @@ export const useUsernameCheck = (username: string) => {
       setStatus("checking");
 
       try {
-        const res = await fetch(
-          `http://localhost:8000/api/users/check-username/${username}`,
-          {
-            signal: controller.signal,
-          },
-        );
+        const res = await fetch(`${BASE_URL}/users/check-username/${username}`, {
+          signal: controller.signal,
+        });
 
         if (!res.ok) {
           throw new Error("Network response was not ok");

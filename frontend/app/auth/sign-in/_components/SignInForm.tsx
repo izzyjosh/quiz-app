@@ -12,7 +12,7 @@ import AuthCard from "@/components/ui/AuthCard";
 import AuthInput from "@/components/ui/AuthInput";
 import SocialAuthButton from "@/components/ui/SocialAuthButton";
 import Logo from "@/components/ui/logo";
-import { login } from "@/lib/api/auth";
+import { login } from "@/lib/auth";
 
 export default function SignInForm() {
   const router = useRouter();
@@ -52,14 +52,10 @@ export default function SignInForm() {
 
     setIsSubmitting(true);
     try {
-      const response = await login({
-        email: trimmedEmail,
-        password,
-      });
+      const response = await login(trimmedEmail, password);
 
-      const token = response?.data?.token;
-      if (token) {
-        localStorage.setItem("accessToken", token);
+      if (!response) {
+        throw new Error("Login failed");
       }
 
       toast.success("Login successful");

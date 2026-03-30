@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@/context/userContext";
+import { useAuth } from "@/context/authContext";
 
 const stats = [
   { value: "3,206", label: "ONLINE NOW" },
@@ -10,8 +10,8 @@ const stats = [
 ];
 
 export default function DashboardWelcomePanel() {
-  const user = useUser();
-  const username = user?.username || "player";
+  const auth = useAuth();
+  const username = auth.user?.username || "player";
 
   return (
     <section className="space-y-5">

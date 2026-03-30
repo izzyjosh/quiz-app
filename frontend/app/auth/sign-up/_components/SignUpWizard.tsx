@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { signUp } from "@/lib/api/auth";
+import { register } from "@/lib/auth";
 
 import AuthCard from "@/components/ui/AuthCard";
 import StepIndicator from "@/components/ui/StepIndicator";
@@ -118,24 +118,19 @@ export default function SignUpWizard() {
 
     setIsSubmitting(true);
     try {
-      const response = await signUp({
+      const response = await register({
         username: username.trim(),
         email: email.trim(),
         password,
         avatar: selectedAvatar,
       });
 
-      const token = response?.data?.token;
-      if (token) {
-        localStorage.setItem("accessToken", token);
+      if (!response) {
+        throw new Error("Registration failed");
       }
-
       toast.success("Account created successfully!");
 
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 500);
+      router.push("/dashboard");
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to create account";

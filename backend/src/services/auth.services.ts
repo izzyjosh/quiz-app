@@ -88,6 +88,7 @@ class AuthService {
 
     const userId = decodedToken.id;
     const tokenVersion = decodedToken.tokenVersion;
+
     if (!userId) {
       throw new BadRequestError("Invalid refresh token payload");
     }
