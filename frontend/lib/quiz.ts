@@ -2,8 +2,32 @@ import { apiFetcher } from "./api";
 
 interface createQuiz {
   title: string;
-  description: string;
+  description?: string;
+  timeLimit: number;
+  category: string;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
 }
+
+type CreateQuestionPayload = {
+  text: string;
+  order: number;
+};
+
+type CreateOptionPayload = {
+  text: string;
+  isCorrect: boolean;
+};
+
+export type PublishQuestionPayload = {
+  text: string;
+  order: number;
+  options: CreateOptionPayload[];
+};
+
+export type PublishQuizPayload = {
+  quiz: createQuiz;
+  questions: PublishQuestionPayload[];
+};
 
 export type QuizRecord = {
   id: string;
@@ -52,6 +76,66 @@ export const createQuiz = async (quizData: createQuiz) => {
   }
   const payload = await res.json();
   return payload.data;
+};
+
+export const createQuestion = async (
+  quizId: string,
+  questionData: CreateQuestionPayload,
+) => {
+  const res = await apiFetcher(`/quizzes/${quizId}/questions`, {
+    method: "POST",
+    body: JSON.stringify(questionData),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to create question");
+  }
+
+  const payload = await res.json();
+  return payload.data;
+};
+
+export const createOption = async (
+  quizId: string,
+  questionId: string,
+  optionData: CreateOptionPayload,
+) => {
+  const res = await apiFetcher(
+    `/quizzes/${quizId}/questions/${questionId}/options`,
+    {
+      method: "POST",
+      body: JSON.stringify(optionData),
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to create option");
+  }
+
+  const payload = await res.json();
+  return payload.data;
+};
+
+export const createQuizWithQuestions = async ({
+  quiz,
+  questions,
+}: PublishQuizPayload) => {
+  const createdQuiz = await createQuiz(quiz);
+
+  for (const question of questions) {
+    const createdQuestion = await createQuestion(createdQuiz.id, {
+      text: question.text,
+      order: question.order,
+    });
+
+    await Promise.all(
+      question.options.map((option) =>
+        createOption(createdQuiz.id, createdQuestion.id, option),
+      ),
+    );
+  }
+
+  return createdQuiz;
 };
 
 // quiz session related functions
