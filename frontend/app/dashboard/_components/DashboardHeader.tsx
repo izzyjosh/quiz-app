@@ -45,6 +45,11 @@ export default function DashboardHeader() {
     router.push("/login");
   };
 
+  const navigateToPendingPage = (path: string) => {
+    setMenuOpen(false);
+    router.push(path);
+  };
+
   return (
     <header className="border-b border-indigo-500/20 bg-slate-950/80 backdrop-blur-md">
       <div className="mx-auto flex min-h-20 w-full max-w-[1240px] items-center justify-between gap-2 px-2.5 sm:min-h-24 sm:gap-4 sm:px-6 lg:px-8">
@@ -106,16 +111,22 @@ export default function DashboardHeader() {
             >
               <DashboardMenuItem
                 label="+ Create quiz"
-                onClick={() => setMenuOpen(false)}
+                onClick={() => navigateToPendingPage("/dashboard/create-quiz")}
+              />
+              <DashboardMenuItem
+                label="Quiz templates"
+                onClick={() =>
+                  navigateToPendingPage("/dashboard/quiz-templates")
+                }
               />
               <DashboardMenuItem
                 label="My stats"
-                onClick={() => setMenuOpen(false)}
+                onClick={() => navigateToPendingPage("/dashboard/my-stats")}
                 icon="bar"
               />
               <DashboardMenuItem
                 label="Settings"
-                onClick={() => setMenuOpen(false)}
+                onClick={() => navigateToPendingPage("/dashboard/settings")}
                 icon="gear"
               />
 

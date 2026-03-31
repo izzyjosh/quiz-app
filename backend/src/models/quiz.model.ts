@@ -18,6 +18,12 @@ export class Quiz {
   @Column()
   title!: string;
 
+  @Column()
+  category!: string;
+
+  @Column()
+  difficulty!: "EASY" | "MEDIUM" | "HARD";
+
   @Column({ nullable: true })
   description!: string;
 

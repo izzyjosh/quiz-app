@@ -7,13 +7,13 @@ class QuizSessionController {
     try {
       const body = (req as any).validatedBody;
       const { id: userId } = (req as any).user;
-      
+
       // Add creator info to the body
       const sessionData = {
         ...body,
         createdByUserId: userId,
       };
-      
+
       const response = await quizSessionService.startSession(sessionData);
       res.status(200).json(
         SuccessResponse({
@@ -69,6 +69,20 @@ class QuizSessionController {
       res.status(200).json(
         SuccessResponse({
           message: "Quiz session ended successfully",
+          data: response,
+        }),
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getAllSessions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const response = await quizSessionService.getActiveAndUpcomingSessions();
+      res.status(200).json(
+        SuccessResponse({
+          message: "Sessions retrieved successfully",
           data: response,
         }),
       );

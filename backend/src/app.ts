@@ -20,7 +20,7 @@ import { authRouter } from "./routes/auth.routes";
 import { quizRouter } from "./routes/quiz.routes";
 import { questionRouter } from "./routes/question.routes";
 import { optionRouter } from "./routes/option.routes";
-import { sesssionRouter } from "./routes/quizsession.routes";
+import { sessionRouter } from "./routes/quizsession.routes";
 import { submissionRouter } from "./routes/submission.routes";
 import { autoActivateSessions } from "./utils/session-scheduler";
 import { userRouter } from "./routes/user.routes";
@@ -68,7 +68,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/quizzes", quizRouter);
 app.use("/api/quizzes/:quizId", questionRouter);
 app.use("/api/quizzes/:quizId/questions/:questionId", optionRouter);
-app.use("/api/sessions", sesssionRouter);
+app.use("/api/sessions", sessionRouter);
 app.use("/api/submissions", submissionRouter);
 app.use("/api/users", userRouter);
 

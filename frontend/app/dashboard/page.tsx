@@ -3,6 +3,7 @@
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardHeader from "./_components/DashboardHeader";
 import DashboardWelcomePanel from "./_components/DashboardWelcomePanel";
+import DashboardQuizCards from "./_components/DashboardQuizCards";
 
 export default function DashboardPage() {
   return (
@@ -12,7 +13,10 @@ export default function DashboardPage() {
           <DashboardHeader />
         </header>
         <main className="mx-auto w-full max-w-[1240px] px-3 py-6 sm:px-6 lg:px-8">
-          <DashboardWelcomePanel />
+          <div className="space-y-8">
+            <DashboardWelcomePanel />
+            <DashboardQuizCards />
+          </div>
         </main>
       </ProtectedRoute>
     </>

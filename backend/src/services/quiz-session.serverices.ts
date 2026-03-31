@@ -22,6 +22,11 @@ type SessionQuestionPayload = {
   timeLimit: number;
 };
 
+type ActiveAndUpcomingSessions = {
+  activeSessions: QuizSession[];
+  upcomingSessions: QuizSession[];
+};
+
 class QuizSessionService {
   private quizSessionRepository = AppDataSource.getRepository(QuizSession);
   private questionTimers = new Map<string, NodeJS.Timeout>();
@@ -272,7 +277,7 @@ class QuizSessionService {
     session.currentQuestionIndex = data.currentQuestionIndex;
     session.startTime = data.startTime || undefined;
     session.scheduledStartTime = data.scheduledStartTime || undefined;
-    session.createdByUserId = data.createdByUserId;
+    session.createdByUserId = data.createdByUserId as string;
     return await this.quizSessionRepository.save(session);
   }
 
@@ -377,6 +382,34 @@ class QuizSessionService {
     );
 
     return await this.quizSessionRepository.save(session);
+  }
+
+  // get all active and upcoming sessions
+  async getActiveAndUpcomingSessions(): Promise<ActiveAndUpcomingSessions> {
+    const now = new Date();
+
+    const [activeSessions, upcomingSessions] = await Promise.all([
+      this.quizSessionRepository.find({
+        where: {
+          status: "started",
+        },
+        order: {
+          startTime: "DESC",
+        },
+      }),
+      this.quizSessionRepository
+        .createQueryBuilder("session")
+        .where("session.status = :status", { status: "waiting" })
+        .andWhere("session.scheduledStartTime IS NOT NULL")
+        .andWhere("session.scheduledStartTime > :now", { now })
+        .orderBy("session.scheduledStartTime", "ASC")
+        .getMany(),
+    ]);
+
+    return {
+      activeSessions,
+      upcomingSessions,
+    };
   }
 }
 
