@@ -57,6 +57,11 @@ export type ActiveAndUpcomingSessionsResponse = {
   upcomingSessions: SessionRecord[];
 };
 
+export type CreateQuizSessionPayload = {
+  quizId: string;
+  scheduledStartTime?: string;
+};
+
 export const getQuizzes = async (): Promise<QuizRecord[]> => {
   const res = await apiFetcher("/quizzes/");
   if (!res.ok) {
@@ -139,12 +144,9 @@ export const createQuizWithQuestions = async ({
 };
 
 // quiz session related functions
-interface createQuizSession {
-  quizId: string;
-  scheduledStartTime?: string; // ISO string
-}
-
-export const createQuizSession = async (sessionData: createQuizSession) => {
+export const createQuizSession = async (
+  sessionData: CreateQuizSessionPayload,
+): Promise<SessionRecord> => {
   const res = await apiFetcher("/sessions/start", {
     method: "POST",
     body: JSON.stringify(sessionData),
@@ -152,6 +154,21 @@ export const createQuizSession = async (sessionData: createQuizSession) => {
   if (!res.ok) {
     throw new Error("Failed to create quiz session");
   }
+  const payload = await res.json();
+  return payload.data;
+};
+
+export const activateQuizSession = async (
+  sessionId: string,
+): Promise<SessionRecord> => {
+  const res = await apiFetcher(`/sessions/${sessionId}/activate`, {
+    method: "POST",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to activate quiz session");
+  }
+
   const payload = await res.json();
   return payload.data;
 };

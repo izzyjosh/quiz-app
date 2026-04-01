@@ -8,12 +8,11 @@ export type ScheduleSessionModalProps = {
   quizId: string;
   questionCount: number;
   difficulty: string;
+  isSubmitting?: boolean;
   onClose: () => void;
   onLaunch: (sessionData: {
     quizId: string;
-    sessionName: string;
     startImmediately: boolean;
-    maxPlayers: number;
   }) => Promise<void>;
 };
 
@@ -23,40 +22,25 @@ export default function ScheduleSessionModal({
   quizId,
   questionCount,
   difficulty,
+  isSubmitting = false,
   onClose,
   onLaunch,
 }: ScheduleSessionModalProps) {
-  const [sessionName, setSessionName] = useState("");
   const [startImmediately, setStartImmediately] = useState(true);
-  const [maxPlayers, setMaxPlayers] = useState(100);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleLaunch = async () => {
-    if (!sessionName.trim() && !startImmediately) {
-      setError("Session name is required when scheduling for a specific time");
-      return;
-    }
-
     setError(null);
-    setIsSubmitting(true);
 
     try {
       await onLaunch({
         quizId,
-        sessionName: sessionName || `${quizTitle} Session`,
         startImmediately,
-        maxPlayers,
       });
-      // Reset form
-      setSessionName("");
       setStartImmediately(true);
-      setMaxPlayers(100);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to launch session");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -98,20 +82,6 @@ export default function ScheduleSessionModal({
 
         {/* Form Fields */}
         <div className="space-y-6">
-          {/* Session Name */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wide text-slate-400">
-              Session name (optional)
-            </label>
-            <input
-              type="text"
-              value={sessionName}
-              onChange={(e) => setSessionName(e.target.value)}
-              placeholder="e.g. Monday Night Challenge"
-              className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-800/60 px-4 py-3 text-slate-100 placeholder-slate-500 transition focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
-            />
-          </div>
-
           {/* When to Start */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wide text-slate-400">
@@ -138,27 +108,13 @@ export default function ScheduleSessionModal({
                     : "border-slate-700 bg-slate-800/60 text-slate-400 hover:border-slate-600"
                 }`}
               >
-                Schedule
+                Schedule for later
               </button>
             </div>
-          </div>
-
-          {/* Max Players */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wide text-slate-400">
-              Max players
-            </label>
-            <select
-              value={maxPlayers}
-              onChange={(e) => setMaxPlayers(Number(e.target.value))}
-              className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-800/60 px-4 py-3 text-slate-100 transition focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
-            >
-              <option value={25}>Up to 25</option>
-              <option value={50}>Up to 50</option>
-              <option value={100}>Up to 100</option>
-              <option value={500}>Up to 500</option>
-              <option value={1000}>Up to 1000</option>
-            </select>
+            <p className="mt-2 text-xs text-slate-500">
+              Scheduling uses the backend session endpoint and queues the
+              session instead of activating it immediately.
+            </p>
           </div>
 
           {/* Error Message */}

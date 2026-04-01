@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { createQuizSession } from "@/lib/quiz";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { activateQuizSession, createQuizSession } from "@/lib/quiz";
 import ScheduleSessionModal from "./_components/ScheduleSessionModal";
 import { useQuizzes } from "@/hooks/quiz";
 
@@ -18,7 +20,9 @@ type TemplateCard = {
 };
 
 export default function QuizTemplatesPage() {
+  const router = useRouter();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [isLaunchingSession, setIsLaunchingSession] = useState(false);
   const {
     quizzes,
     isLoading: quizzesLoading,
@@ -46,21 +50,36 @@ export default function QuizTemplatesPage() {
 
   const handleLaunchSession = async (sessionData: {
     quizId: string;
-    sessionName: string;
     startImmediately: boolean;
-    maxPlayers: number;
   }) => {
     try {
-      await createQuizSession({
+      setIsLaunchingSession(true);
+
+      const createdSession = await createQuizSession({
         quizId: sessionData.quizId,
         scheduledStartTime: sessionData.startImmediately
           ? undefined
           : new Date(Date.now() + 60 * 60 * 1000).toISOString(),
       });
+
+      if (sessionData.startImmediately) {
+        await activateQuizSession(createdSession.id);
+      }
+
+      toast.success(
+        sessionData.startImmediately
+          ? "Session started successfully"
+          : "Session scheduled successfully",
+      );
       setSelectedCardId(null);
-      // Optionally, show a success notification here
+      router.refresh();
     } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to launch session";
+      toast.error(message);
       throw err;
+    } finally {
+      setIsLaunchingSession(false);
     }
   };
 
@@ -177,6 +196,7 @@ export default function QuizTemplatesPage() {
           difficulty={
             selectedCard.tags[selectedCard.tags.length - 1] || "MEDIUM"
           }
+          isSubmitting={isLaunchingSession}
           onClose={() => setSelectedCardId(null)}
           onLaunch={handleLaunchSession}
         />
