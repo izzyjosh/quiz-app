@@ -13,6 +13,7 @@ export type ScheduleSessionModalProps = {
   onLaunch: (sessionData: {
     quizId: string;
     startImmediately: boolean;
+    scheduledStartTime?: string;
   }) => Promise<void>;
 };
 
@@ -27,17 +28,38 @@ export default function ScheduleSessionModal({
   onLaunch,
 }: ScheduleSessionModalProps) {
   const [startImmediately, setStartImmediately] = useState(true);
+  const [scheduledStartTime, setScheduledStartTime] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const handleLaunch = async () => {
     setError(null);
 
+    if (!startImmediately) {
+      if (!scheduledStartTime) {
+        setError("Please choose a schedule date and time.");
+        return;
+      }
+
+      const selected = new Date(scheduledStartTime);
+      if (
+        Number.isNaN(selected.getTime()) ||
+        selected.getTime() <= Date.now()
+      ) {
+        setError("Scheduled time must be in the future.");
+        return;
+      }
+    }
+
     try {
       await onLaunch({
         quizId,
         startImmediately,
+        scheduledStartTime: startImmediately
+          ? undefined
+          : new Date(scheduledStartTime).toISOString(),
       });
       setStartImmediately(true);
+      setScheduledStartTime("");
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to launch session");
@@ -116,6 +138,21 @@ export default function ScheduleSessionModal({
               session instead of activating it immediately.
             </p>
           </div>
+
+          {!startImmediately ? (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide text-slate-400">
+                Scheduled date and time
+              </label>
+              <input
+                type="datetime-local"
+                value={scheduledStartTime}
+                onChange={(e) => setScheduledStartTime(e.target.value)}
+                disabled={isSubmitting}
+                className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-800/60 px-4 py-3 text-slate-100 transition focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 disabled:opacity-60"
+              />
+            </div>
+          ) : null}
 
           {/* Error Message */}
           {error ? (

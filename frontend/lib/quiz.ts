@@ -152,7 +152,10 @@ export const createQuizSession = async (
     body: JSON.stringify(sessionData),
   });
   if (!res.ok) {
-    throw new Error("Failed to create quiz session");
+    const details = await res.text();
+    throw new Error(
+      details || `Failed to create quiz session (status ${res.status})`,
+    );
   }
   const payload = await res.json();
   return payload.data;

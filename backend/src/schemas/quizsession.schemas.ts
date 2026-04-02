@@ -4,8 +4,8 @@ export const createQuizSessionSchema = z.object({
   quizId: z.string().min(1, "Quiz ID is required"),
   status: z.enum(["waiting", "started", "finished"]).default("waiting"),
   currentQuestionIndex: z.number().int().nonnegative().default(0),
-  startTime: z.date().nullable().default(null),
-  scheduledStartTime: z.date().nullable().optional(),
+  startTime: z.union([z.coerce.date(), z.null()]).default(null),
+  scheduledStartTime: z.union([z.coerce.date(), z.null()]).optional(),
   createdByUserId: z.string().optional(),
 });
 
