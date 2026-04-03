@@ -16,6 +16,9 @@ export class QuizSession {
   @PrimaryGeneratedColumn("uuid")
   id!: number;
 
+  @Column({ nullable: true })
+  sessionName!: string;
+
   @ManyToOne(() => Quiz)
   @JoinColumn({ name: "quizId" })
   quiz!: Quiz;

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const createQuizSessionSchema = z.object({
+  sessionName: z.string().min(1, "Session name is required"),
   quizId: z.string().min(1, "Quiz ID is required"),
   status: z.enum(["waiting", "started", "finished"]).default("waiting"),
   currentQuestionIndex: z.number().int().nonnegative().default(0),

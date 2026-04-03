@@ -40,7 +40,7 @@ const formatCountdown = (scheduledStartTime?: string | null): string => {
 
 const mapLiveSession = (session: SessionRecord): SessionCardData => ({
   id: session.id,
-  title: `Session ${session.id.slice(0, 8)}`,
+  title: session.sessionName?.trim() || `Session ${session.id.slice(0, 8)}`,
   topic: `Quiz ${session.quizId}`,
   icon: "⚡",
   status: "live",
@@ -55,7 +55,7 @@ const mapLiveSession = (session: SessionRecord): SessionCardData => ({
 
 const mapUpcomingSession = (session: SessionRecord): SessionCardData => ({
   id: session.id,
-  title: `Session ${session.id.slice(0, 8)}`,
+  title: session.sessionName?.trim() || `Session ${session.id.slice(0, 8)}`,
   topic: `Quiz ${session.quizId}`,
   icon: "🧮",
   status: "upcoming",

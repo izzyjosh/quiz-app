@@ -272,6 +272,7 @@ class QuizSessionService {
 
   async startSession(data: CreateQuizSessionDTO): Promise<QuizSession> {
     const session = new QuizSession();
+    session.sessionName = data.sessionName;
     session.quizId = data.quizId;
     session.status = data.status;
     session.currentQuestionIndex = data.currentQuestionIndex;

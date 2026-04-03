@@ -50,6 +50,7 @@ export default function QuizTemplatesPage() {
 
   const handleLaunchSession = async (sessionData: {
     quizId: string;
+    sessionName: string;
     startImmediately: boolean;
     scheduledStartTime?: string;
   }) => {
@@ -57,6 +58,7 @@ export default function QuizTemplatesPage() {
       setIsLaunchingSession(true);
 
       const createdSession = await createQuizSession({
+        sessionName: sessionData.sessionName,
         quizId: sessionData.quizId,
         scheduledStartTime: sessionData.startImmediately
           ? undefined

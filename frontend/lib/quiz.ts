@@ -43,6 +43,7 @@ export type QuizRecord = {
 
 export type SessionRecord = {
   id: string;
+  sessionName?: string | null;
   quizId: string;
   status: "waiting" | "started" | "finished";
   currentQuestionIndex: number;
@@ -58,6 +59,7 @@ export type ActiveAndUpcomingSessionsResponse = {
 };
 
 export type CreateQuizSessionPayload = {
+  sessionName: string;
   quizId: string;
   scheduledStartTime?: string;
 };
