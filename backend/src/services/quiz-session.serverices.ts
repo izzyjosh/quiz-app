@@ -165,7 +165,7 @@ class QuizSessionService {
       questionId: question.id,
       text: question.text,
       options: question.options,
-      timeLimit: question.timeLimit, // seconds
+      timeLimit: question.timeLimit,
       endsAt,
     });
   }
