@@ -1,17 +1,24 @@
 "use client";
 
 import { useAuth } from "@/context/authContext";
-
-const stats = [
-  { value: "3,206", label: "ONLINE NOW" },
-  { value: "5", label: "LIVE SESSIONS" },
-  { value: "5", label: "BLUEPRINTS" },
-  { value: "99.1%", label: "UPTIME" },
-];
+import { useSessionStats } from "@/hooks/session";
 
 export default function DashboardWelcomePanel() {
   const auth = useAuth();
+  const { stats: sessionStats } = useSessionStats();
   const username = auth.user?.username || "player";
+  const statCards = [
+    {
+      value: sessionStats.activeParticipants.toLocaleString(),
+      label: "ONLINE NOW",
+    },
+    { value: sessionStats.activeSessions, label: "LIVE SESSIONS" },
+    {
+      value: sessionStats.totalQuizTemplates.toLocaleString(),
+      label: "BLUEPRINTS",
+    },
+    { value: "99.1%", label: "UPTIME" },
+  ];
 
   return (
     <section className="space-y-5">
@@ -39,7 +46,7 @@ export default function DashboardWelcomePanel() {
       </div>
 
       <div className="inline-grid w-fit grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        {stats.map((item) => (
+        {statCards.map((item) => (
           <article
             key={item.label}
             className="rounded-2xl border border-slate-700/70 bg-slate-900/65 px-4 py-3.5 sm:px-5 sm:py-4"

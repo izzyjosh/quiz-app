@@ -58,6 +58,12 @@ export type ActiveAndUpcomingSessionsResponse = {
   upcomingSessions: SessionRecord[];
 };
 
+export type SessionStatsResponse = {
+  activeParticipants: number;
+  activeSessions: number;
+  totalQuizTemplates: number;
+};
+
 export type CreateQuizSessionPayload = {
   sessionName: string;
   quizId: string;
@@ -188,3 +194,12 @@ export const getActiveAndUpcomingSessions =
     const payload = await res.json();
     return payload.data;
   };
+
+export const getSessionStats = async (): Promise<SessionStatsResponse> => {
+  const res = await apiFetcher("/sessions/stats");
+  if (!res.ok) {
+    throw new Error("Failed to fetch session stats");
+  }
+  const payload = await res.json();
+  return payload.data;
+};

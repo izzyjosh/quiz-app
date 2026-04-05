@@ -13,6 +13,12 @@ import { redisClient } from "../config/redis";
 import { Question } from "../models/question.model";
 import { questionService } from "./question.services";
 import { io } from "../app";
+import {
+  activeParticipants,
+  emitSessionStatsUpdated,
+  type SessionStatsPayload,
+} from "../utils/socket";
+import { Quiz } from "../models/quiz.model";
 
 type SessionQuestionPayload = {
   id: string;
@@ -27,8 +33,37 @@ type ActiveAndUpcomingSessions = {
   upcomingSessions: QuizSession[];
 };
 
+export type SessionStats = SessionStatsPayload;
+
+export async function getSessionStatsSnapshot(): Promise<SessionStats> {
+  const participantRepository = AppDataSource.getRepository(Participant);
+  const quizSessionRepository = AppDataSource.getRepository(QuizSession);
+  const quizRepository = AppDataSource.getRepository(Quiz);
+
+  const [activeParticipants, activeSessions, totalQuizTemplates] =
+    await Promise.all([
+      participantRepository
+        .createQueryBuilder("participant")
+        .innerJoin("participant.quizSession", "session")
+        .where("session.status = :status", { status: "started" })
+        .getCount(),
+      quizSessionRepository.count({
+        where: { status: "started" },
+      }),
+      quizRepository.count(),
+    ]);
+
+  return {
+    activeParticipants,
+    activeSessions,
+    totalQuizTemplates,
+  };
+}
+
 class QuizSessionService {
   private quizSessionRepository = AppDataSource.getRepository(QuizSession);
+  private participantRepository = AppDataSource.getRepository(Participant);
+  private quizRepository = AppDataSource.getRepository(Quiz);
   private questionTimers = new Map<string, NodeJS.Timeout>();
   private countdownTimers = new Map<string, NodeJS.Timeout>();
 
@@ -65,6 +100,10 @@ class QuizSessionService {
         String(currentQuestionIndex),
       ),
     ]);
+  }
+
+  private async emitSessionStats(): Promise<void> {
+    emitSessionStatsUpdated(await getSessionStatsSnapshot());
   }
 
   private clearLocalTimers(sessionId: string): void {
@@ -227,6 +266,7 @@ class QuizSessionService {
     ]);
 
     io.to(`session-${sessionId}`).emit("quiz:end", { reason });
+    await this.emitSessionStats();
   }
 
   private async activateSessionInternal(
@@ -279,7 +319,11 @@ class QuizSessionService {
     session.startTime = data.startTime || undefined;
     session.scheduledStartTime = data.scheduledStartTime || undefined;
     session.createdByUserId = data.createdByUserId as string;
-    return await this.quizSessionRepository.save(session);
+    const savedSession = await this.quizSessionRepository.save(session);
+
+    await this.emitSessionStats();
+
+    return savedSession;
   }
 
   async joinSession(sessionId: string, userId: string): Promise<Participant> {
@@ -293,10 +337,18 @@ class QuizSessionService {
       session.id as any,
     );
 
+    if (!activeParticipants.has(sessionId)) {
+      activeParticipants.set(sessionId, new Set());
+    }
+
+    activeParticipants.get(sessionId)?.add(userId);
+
     await leaderboardService.ensureMember(
       String(session.id),
       String(participant.id),
     );
+
+    await this.emitSessionStats();
 
     return participant;
   }
@@ -322,7 +374,11 @@ class QuizSessionService {
       );
     }
 
-    return await this.activateSessionInternal(session);
+    const activatedSession = await this.activateSessionInternal(session);
+
+    await this.emitSessionStats();
+
+    return activatedSession;
   }
 
   /**
@@ -332,7 +388,11 @@ class QuizSessionService {
    */
   async autoActivateSession(sessionId: string): Promise<QuizSession> {
     const session = await this.getSession(sessionId);
-    return await this.activateSessionInternal(session);
+    const activatedSession = await this.activateSessionInternal(session);
+
+    await this.emitSessionStats();
+
+    return activatedSession;
   }
 
   async getSession(sessionId: string): Promise<QuizSession> {
@@ -363,6 +423,7 @@ class QuizSessionService {
     await this.finishSession(String(session.id), "ended");
 
     const updatedSession = await this.getSession(sessionId);
+    await this.emitSessionStats();
     return updatedSession;
   }
 
@@ -410,6 +471,27 @@ class QuizSessionService {
     return {
       activeSessions,
       upcomingSessions,
+    };
+  }
+
+  async getSessionStats(): Promise<SessionStats> {
+    const [activeParticipants, activeSessions, totalQuizTemplates] =
+      await Promise.all([
+        this.participantRepository
+          .createQueryBuilder("participant")
+          .innerJoin("participant.quizSession", "session")
+          .where("session.status = :status", { status: "started" })
+          .getCount(),
+        this.quizSessionRepository.count({
+          where: { status: "started" },
+        }),
+        this.quizRepository.count(),
+      ]);
+
+    return {
+      activeParticipants,
+      activeSessions,
+      totalQuizTemplates,
     };
   }
 }

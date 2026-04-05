@@ -17,6 +17,10 @@ sessionRouter.get("/upcoming-active", authMiddleware, (req, res, next) =>
   quizSessionController.getAllSessions(req, res, next),
 );
 
+sessionRouter.get("/stats", authMiddleware, (req, res, next) =>
+  quizSessionController.getSessionStats(req, res, next),
+);
+
 sessionRouter.post("/:sessionId/activate", authMiddleware, (req, res, next) =>
   quizSessionController.activateSession(req, res, next),
 );

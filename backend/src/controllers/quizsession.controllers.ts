@@ -90,6 +90,20 @@ class QuizSessionController {
       next(err);
     }
   }
+
+  async getSessionStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const response = await quizSessionService.getSessionStats();
+      res.status(200).json(
+        SuccessResponse({
+          message: "Session stats retrieved successfully",
+          data: response,
+        }),
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const quizSessionController = new QuizSessionController();

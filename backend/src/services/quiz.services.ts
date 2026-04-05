@@ -3,6 +3,8 @@ import { Quiz } from "../models/quiz.model";
 import { QuizSession } from "../models/quizsession.model";
 import { CreateQuizDTO } from "../schemas/quiz.schemas";
 import { NotFoundError } from "../utils/api.errors";
+import { emitTotalQuizCount, emitSessionStatsUpdated } from "../utils/socket";
+import { getSessionStatsSnapshot } from "./quiz-session.serverices";
 
 type QuizWithSessionCounts = Quiz & {
   liveNow: number;
@@ -21,7 +23,13 @@ class QuizService {
       userId: userId,
     };
     const quiz = this.quizRepository.create(quizData);
-    return await this.quizRepository.save(quiz);
+    const createdQuiz = await this.quizRepository.save(quiz);
+
+    const totalQuizCount = await this.quizRepository.count();
+    emitTotalQuizCount(totalQuizCount);
+    emitSessionStatsUpdated(await getSessionStatsSnapshot());
+
+    return createdQuiz;
   }
 
   async getQuiz(quizId: string): Promise<Quiz> {
@@ -88,6 +96,9 @@ class QuizService {
       throw new NotFoundError("Quiz not found");
     }
     await this.quizRepository.remove(quiz);
+
+    emitTotalQuizCount(await this.quizRepository.count());
+    emitSessionStatsUpdated(await getSessionStatsSnapshot());
   }
 }
 

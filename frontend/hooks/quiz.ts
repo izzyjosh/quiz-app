@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getQuizzes, type QuizRecord } from "@/lib/quiz";
+import { getQuizzes, getSessionStats, type QuizRecord } from "@/lib/quiz";
 
 export const useQuizzes = () => {
   const [quizzes, setQuizzes] = useState<QuizRecord[]>([]);

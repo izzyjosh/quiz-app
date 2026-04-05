@@ -25,6 +25,7 @@ import { submissionRouter } from "./routes/submission.routes";
 import { autoActivateSessions } from "./utils/session-scheduler";
 import { userRouter } from "./routes/user.routes";
 import { authService } from "./services/auth.services";
+import { registerSocketHandlers, setSocketServer } from "./utils/socket";
 
 const app = express();
 
@@ -83,12 +84,15 @@ export const io = new Server(server, {
     origin: "*",
   },
 });
+setSocketServer(io);
 
 // Start server using IIFE
 (async () => {
   try {
     await AppDataSource.initialize();
     sysLogger.info("Database connected successfully");
+
+    registerSocketHandlers(io);
 
     server.listen(app.get("port"), () => {
       sysLogger.info(`Server + socket is running on port ${app.get("port")}`);
