@@ -90,6 +90,14 @@ export type CreateQuizSessionPayload = {
   scheduledStartTime?: string;
 };
 
+export type ParticipantRecord = {
+  id: string;
+  userId: string;
+  quizSessionId: string;
+  score: number;
+  createdAt: string;
+};
+
 export const getQuizzes = async (): Promise<QuizRecord[]> => {
   const res = await apiFetcher("/quizzes/");
   if (!res.ok) {
@@ -199,6 +207,21 @@ export const activateQuizSession = async (
 
   if (!res.ok) {
     throw new Error("Failed to activate quiz session");
+  }
+
+  const payload = await res.json();
+  return payload.data;
+};
+
+export const joinQuizSession = async (
+  sessionId: string,
+): Promise<ParticipantRecord> => {
+  const res = await apiFetcher(`/sessions/${sessionId}/join`, {
+    method: "POST",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to join quiz session");
   }
 
   const payload = await res.json();

@@ -5,6 +5,24 @@ type ActiveParticipantsPayload = {
   count: number;
 };
 
+type QuizEndPayload = {
+  reason: "completed" | "ended";
+};
+
+type LeaderboardEntry = {
+  participantId: string;
+  score: number;
+};
+
+type LeaderboardUpdatePayload = {
+  leaderboard: LeaderboardEntry[];
+};
+
+type ParticipantJoinedPayload = {
+  participantId: string;
+  timestamp: string;
+};
+
 export type SessionStatsPayload = {
   activeParticipants: number;
   activeSessions: number;
@@ -22,11 +40,11 @@ export const socketService = {
       socket.disconnect();
     }
   },
-  joinSession(sessionId: string, userId: string) {
-    socket.emit(SOCKET_EVENTS.JOIN_SESSION, { sessionId, userId });
+  joinSession(sessionId: string) {
+    socket.emit(SOCKET_EVENTS.JOIN_SESSION, sessionId);
   },
-  leaveSession(sessionId: string, userId: string) {
-    socket.emit(SOCKET_EVENTS.LEAVE_SESSION, { sessionId, userId });
+  leaveSession(userId: string) {
+    socket.emit("leaveParticipant", userId);
   },
 
   onActiveParticipants(callback: (data: ActiveParticipantsPayload) => void) {
@@ -67,6 +85,27 @@ export const socketService = {
     socket.on(SOCKET_EVENTS.LIVE_SESSION_REMOVED, callback);
     return () => {
       socket.off(SOCKET_EVENTS.LIVE_SESSION_REMOVED, callback);
+    };
+  },
+
+  onQuizEnd(callback: (data: QuizEndPayload) => void) {
+    socket.on("quiz:end", callback);
+    return () => {
+      socket.off("quiz:end", callback);
+    };
+  },
+
+  onLeaderboardUpdate(callback: (data: LeaderboardUpdatePayload) => void) {
+    socket.on("leaderboardUpdate", callback);
+    return () => {
+      socket.off("leaderboardUpdate", callback);
+    };
+  },
+
+  onParticipantJoined(callback: (data: ParticipantJoinedPayload) => void) {
+    socket.on("participantJoined", callback);
+    return () => {
+      socket.off("participantJoined", callback);
     };
   },
 };
