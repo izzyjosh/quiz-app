@@ -21,7 +21,7 @@ export class Quiz {
   @Column()
   category!: string;
 
-  @Column({ default: "frontend" })
+  @Column({ default: "aurora" })
   themeKey!: string;
 
   @Column({ nullable: true })

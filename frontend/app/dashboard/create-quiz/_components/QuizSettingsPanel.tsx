@@ -88,13 +88,8 @@ export default function QuizSettingsPanel({
                     >
                       {theme.icon}
                     </span>
-                    <span className="flex flex-col">
-                      <span className="text-sm font-semibold text-slate-100">
-                        {theme.label}
-                      </span>
-                      <span className="text-xs text-slate-400">
-                        {theme.key}
-                      </span>
+                    <span className="text-sm font-semibold text-slate-100">
+                      {theme.label}
                     </span>
                   </div>
                 </button>

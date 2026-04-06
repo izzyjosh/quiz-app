@@ -40,9 +40,9 @@ export default function CreateQuizPage() {
   const [quiz, setQuiz] = useState<Quiz>({
     title: "",
     description: "",
-    themeKey: "frontend",
-    icon: getQuizTheme("frontend").icon,
-    accentColor: getQuizTheme("frontend").accentColor,
+    themeKey: "aurora",
+    icon: getQuizTheme("aurora").icon,
+    accentColor: getQuizTheme("aurora").accentColor,
     difficulty: "easy",
     category: "",
     scheduleType: "immediate",

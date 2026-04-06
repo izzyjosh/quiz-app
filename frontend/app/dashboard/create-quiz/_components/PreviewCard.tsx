@@ -40,7 +40,7 @@ export default function PreviewCard({ quiz }: PreviewCardProps) {
 
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="rounded-lg bg-indigo-500/20 px-3 py-1 text-xs font-bold uppercase text-indigo-200">
-            {theme.label}
+            {quiz.category || "Category"}
           </span>
           <span className="rounded-lg bg-slate-700 px-3 py-1 text-xs font-bold uppercase text-slate-200">
             {quiz.difficulty}
