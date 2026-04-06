@@ -16,6 +16,7 @@ export type Question = {
 export type Quiz = {
   title: string;
   description: string;
+  themeKey: string;
   icon: string;
   accentColor: string;
   difficulty: "easy" | "medium" | "hard";

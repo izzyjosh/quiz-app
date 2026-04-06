@@ -2,19 +2,24 @@
 
 import { useSessions } from "@/hooks/quizSession";
 import { SessionRecord } from "@/lib/quiz";
+import { getQuizTheme } from "@/lib/quizTheme";
 
 type SessionStatus = "live" | "upcoming";
 
 type SessionCardData = {
   id: string;
   title: string;
-  topic: string;
+  description: string;
+  category: string;
+  difficulty: string;
+  questionCount: number;
   icon: string;
+  accentColor: string;
   status: SessionStatus;
   statusLabel: string;
   accentClass: string;
   tags: string[];
-  capacityLabel: string;
+  capacityLabel?: string;
   ctaLabel: string;
   timerLabel?: string;
   progressPct?: number;
@@ -38,32 +43,58 @@ const formatCountdown = (scheduledStartTime?: string | null): string => {
   return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
 };
 
+const resolveSessionTheme = (session: SessionRecord) => {
+  const fallbackTheme = getQuizTheme(session.quiz?.themeKey);
+
+  return {
+    icon: session.quiz?.icon || fallbackTheme.icon,
+    accentClass: fallbackTheme.accentClass,
+    accentColor: session.quiz?.accentColor || fallbackTheme.accentColor,
+  };
+};
+
 const mapLiveSession = (session: SessionRecord): SessionCardData => ({
+  ...resolveSessionTheme(session),
   id: session.id,
-  title: session.sessionName?.trim() || `Session ${session.id.slice(0, 8)}`,
-  topic: `Quiz ${session.quizId}`,
-  icon: "⚡",
+  title:
+    session.quiz?.title?.trim() ||
+    session.sessionName?.trim() ||
+    `Quiz ${session.quizId}`,
+  description:
+    session.quiz?.description?.trim() ||
+    "No description available for this live session.",
+  category: session.quiz?.category?.toUpperCase() || "GENERAL",
+  difficulty: session.quiz?.difficulty?.toUpperCase() || "MEDIUM",
+  questionCount:
+    session.quiz?.questionCount ?? session.quiz?.questions?.length ?? 0,
   status: "live",
-  statusLabel: `Live · Q${session.currentQuestionIndex + 1}`,
-  accentClass: "border-t-indigo-400",
-  tags: ["ACTIVE", "IN PROGRESS"],
-  capacityLabel: "LIVE",
-  ctaLabel: "Join ->",
+  statusLabel: `Q${session.currentQuestionIndex + 1}`,
+  tags: ["IN PROGRESS"],
+  capacityLabel: undefined,
+  ctaLabel: "Join",
   progressPct: Math.min((session.currentQuestionIndex + 1) * 20, 100),
-  participants: ["LIVE"],
+  participants: undefined,
 });
 
 const mapUpcomingSession = (session: SessionRecord): SessionCardData => ({
+  ...resolveSessionTheme(session),
   id: session.id,
-  title: session.sessionName?.trim() || `Session ${session.id.slice(0, 8)}`,
-  topic: `Quiz ${session.quizId}`,
-  icon: "🧮",
+  title:
+    session.quiz?.title?.trim() ||
+    session.sessionName?.trim() ||
+    `Quiz ${session.quizId}`,
+  description:
+    session.quiz?.description?.trim() ||
+    "No description available for this scheduled session.",
+  category: session.quiz?.category?.toUpperCase() || "GENERAL",
+  difficulty: session.quiz?.difficulty?.toUpperCase() || "MEDIUM",
+  questionCount:
+    session.quiz?.questionCount ?? session.quiz?.questions?.length ?? 0,
   status: "upcoming",
-  statusLabel: "Upcoming",
-  accentClass: "border-t-amber-500",
-  tags: ["SCHEDULED", "WAITING"],
-  capacityLabel: "UPCOMING",
-  ctaLabel: "Reserve ->",
+  statusLabel: "Starting soon",
+  tags: [],
+  capacityLabel: undefined,
+  ctaLabel: "Reserve spot",
   timerLabel: formatCountdown(session.scheduledStartTime),
 });
 
@@ -130,6 +161,7 @@ function SessionCard({ session }: { session: SessionCardData }) {
         "rounded-3xl border border-slate-800/90 bg-slate-900/70 p-5 shadow-xl shadow-black/20",
         session.accentClass,
       ].join(" ")}
+      style={{ borderTopColor: session.accentColor }}
     >
       <div className="mb-4 flex items-start justify-between gap-3">
         <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 text-xl">
@@ -147,12 +179,23 @@ function SessionCard({ session }: { session: SessionCardData }) {
         </span>
       </div>
 
-      <p className="text-slate-400">📋 {session.topic}</p>
       <h3 className="mt-1 text-3xl font-extrabold text-white">
         {session.title}
       </h3>
+      <p className="mt-2 text-slate-400">{session.description}</p>
 
       <div className="mt-3 flex flex-wrap gap-2">
+        <span className="rounded-xl bg-indigo-500/20 px-3 py-1 text-xs font-bold tracking-wide text-indigo-300">
+          {session.category}
+        </span>
+        <span className="rounded-xl bg-slate-700/60 px-3 py-1 text-xs font-bold tracking-wide text-slate-300">
+          {session.difficulty}
+        </span>
+        {!isLive ? (
+          <span className="rounded-xl bg-slate-700/60 px-3 py-1 text-xs font-bold tracking-wide text-slate-300">
+            {session.questionCount} QS
+          </span>
+        ) : null}
         {session.tags.map((tag, index) => {
           const isProgressTag = tag === "IN PROGRESS";
           const isPrimaryTag = index === 0;
@@ -175,11 +218,13 @@ function SessionCard({ session }: { session: SessionCardData }) {
         })}
       </div>
 
-      <div className="mt-2">
-        <span className="rounded-xl bg-slate-700/60 px-3 py-1 text-xs font-bold tracking-wide text-slate-400">
-          {session.capacityLabel}
-        </span>
-      </div>
+      {session.capacityLabel ? (
+        <div className="mt-2">
+          <span className="rounded-xl bg-slate-700/60 px-3 py-1 text-xs font-bold tracking-wide text-slate-400">
+            {session.capacityLabel}
+          </span>
+        </div>
+      ) : null}
 
       {isLive ? (
         <div className="mt-5 h-1 w-full rounded-full bg-slate-700/80">
@@ -191,21 +236,30 @@ function SessionCard({ session }: { session: SessionCardData }) {
       ) : null}
 
       <div className="mt-5 flex items-center justify-between gap-3">
-        {isLive ? (
-          <div className="rounded-lg bg-slate-800/80 px-2.5 py-1.5 text-lg">
-            {(session.participants ?? []).join(" ")}
-          </div>
-        ) : (
+        {!isLive ? (
           <span className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xl font-bold text-amber-300">
             {session.timerLabel}
           </span>
-        )}
+        ) : null}
 
         <button
           type="button"
-          className="rounded-2xl border border-slate-600 px-5 py-2.5 text-2xl font-bold text-white transition hover:border-slate-400"
+          className={[
+            "inline-flex items-center gap-2 rounded-2xl border border-slate-600 px-4 py-2 text-base font-semibold text-white transition hover:border-slate-400",
+            isLive ? "ml-auto" : "",
+          ].join(" ")}
         >
-          {session.ctaLabel}
+          <span>{session.ctaLabel}</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4">
+            <path
+              d="M5 12h14m-6-6 6 6-6 6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       </div>
     </article>

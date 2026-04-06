@@ -55,4 +55,18 @@ export const socketService = {
       socket.off(SOCKET_EVENTS.SESSION_STATS_UPDATE, callback);
     };
   },
+
+  onSessionListUpdated(callback: () => void) {
+    socket.on(SOCKET_EVENTS.SESSION_LIST_UPDATED, callback);
+    return () => {
+      socket.off(SOCKET_EVENTS.SESSION_LIST_UPDATED, callback);
+    };
+  },
+
+  onLiveSessionRemoved(callback: (data: { sessionId: string }) => void) {
+    socket.on(SOCKET_EVENTS.LIVE_SESSION_REMOVED, callback);
+    return () => {
+      socket.off(SOCKET_EVENTS.LIVE_SESSION_REMOVED, callback);
+    };
+  },
 };

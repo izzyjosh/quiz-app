@@ -1,37 +1,13 @@
 import type { Quiz } from "./types";
+import { getQuizThemeOptions } from "@/lib/quizTheme";
 
 type QuizSettingsPanelProps = {
   quiz: Quiz;
   onQuizChange: (nextQuiz: Quiz) => void;
 };
 
-const ICON_CHOICES = [
-  "🏗️",
-  "⚡",
-  "🧮",
-  "🔒",
-  "🧠",
-  "🎯",
-  "🚀",
-  "🧪",
-  "💡",
-  "🎮",
-];
-
-const COLOR_CHOICES = [
-  "#6366f1",
-  "#f59e0b",
-  "#14b8a6",
-  "#ec4899",
-  "#f97316",
-  "#06b6d4",
-  "#8b5cf6",
-  "#ef4444",
-  "#22c55e",
-  "#a855f7",
-];
-
 const DIFFICULTIES: Array<Quiz["difficulty"]> = ["easy", "medium", "hard"];
+const THEME_CHOICES = getQuizThemeOptions();
 
 export default function QuizSettingsPanel({
   quiz,
@@ -81,24 +57,46 @@ export default function QuizSettingsPanel({
 
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Icon
+            Theme
           </p>
-          <div className="mt-2 grid grid-cols-5 gap-2">
-            {ICON_CHOICES.map((icon) => {
-              const selected = quiz.icon === icon;
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {THEME_CHOICES.map((theme) => {
+              const selected = quiz.themeKey === theme.key;
               return (
                 <button
-                  key={icon}
+                  key={theme.key}
                   type="button"
-                  onClick={() => onQuizChange({ ...quiz, icon })}
+                  onClick={() =>
+                    onQuizChange({
+                      ...quiz,
+                      themeKey: theme.key,
+                      icon: theme.icon,
+                      accentColor: theme.accentColor,
+                    })
+                  }
                   className={[
-                    "rounded-xl border px-2 py-2 text-xl transition",
+                    "rounded-xl border px-3 py-3 text-left transition",
                     selected
                       ? "border-indigo-400 bg-indigo-500/20"
                       : "border-white/10 bg-slate-800/70 hover:border-white/20",
                   ].join(" ")}
                 >
-                  {icon}
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-xl"
+                      style={{ backgroundColor: `${theme.accentColor}22` }}
+                    >
+                      {theme.icon}
+                    </span>
+                    <span className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-100">
+                        {theme.label}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {theme.key}
+                      </span>
+                    </span>
+                  </div>
                 </button>
               );
             })}
@@ -107,24 +105,20 @@ export default function QuizSettingsPanel({
 
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Accent color
+            Selected theme
           </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {COLOR_CHOICES.map((color) => {
-              const selected = quiz.accentColor === color;
-              return (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => onQuizChange({ ...quiz, accentColor: color })}
-                  className={[
-                    "h-8 w-8 rounded-full border-2 transition",
-                    selected ? "border-white" : "border-transparent",
-                  ].join(" ")}
-                  style={{ backgroundColor: color }}
-                />
-              );
-            })}
+          <div className="mt-2 rounded-xl border border-white/10 bg-slate-800/70 px-4 py-3 text-sm text-slate-300">
+            <div className="flex items-center justify-between gap-3">
+              <span>
+                {THEME_CHOICES.find((theme) => theme.key === quiz.themeKey)
+                  ?.label || "Core"}
+              </span>
+              <span
+                className="inline-flex h-6 w-6 rounded-full border border-white/20"
+                style={{ backgroundColor: quiz.accentColor }}
+                aria-hidden="true"
+              />
+            </div>
           </div>
         </div>
 

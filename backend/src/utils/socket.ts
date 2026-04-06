@@ -26,6 +26,14 @@ export function emitSessionStatsUpdated(stats: SessionStatsPayload): void {
   socketServer?.emit("sessionStatsUpdated", stats);
 }
 
+export function emitSessionListUpdated(): void {
+  socketServer?.emit("sessionListUpdated");
+}
+
+export function emitLiveSessionRemoved(sessionId: string): void {
+  socketServer?.emit("liveSessionRemoved", { sessionId });
+}
+
 function getTotalActiveParticipants(): number {
   let count = 0;
 

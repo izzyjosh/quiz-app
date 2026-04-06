@@ -15,6 +15,8 @@ import { questionService } from "./question.services";
 import { io } from "../app";
 import {
   activeParticipants,
+  emitLiveSessionRemoved,
+  emitSessionListUpdated,
   emitSessionStatsUpdated,
   type SessionStatsPayload,
 } from "../utils/socket";
@@ -66,6 +68,7 @@ class QuizSessionService {
   private quizRepository = AppDataSource.getRepository(Quiz);
   private questionTimers = new Map<string, NodeJS.Timeout>();
   private countdownTimers = new Map<string, NodeJS.Timeout>();
+  private scheduledActivationTimers = new Map<string, NodeJS.Timeout>();
 
   private getQuestionsKey(sessionId: string): string {
     return `session:${sessionId}:questions`;
@@ -120,9 +123,47 @@ class QuizSessionService {
     }
   }
 
+  private clearScheduledActivationTimer(sessionId: string): void {
+    const scheduledActivationTimer =
+      this.scheduledActivationTimers.get(sessionId);
+    if (!scheduledActivationTimer) {
+      return;
+    }
+
+    clearTimeout(scheduledActivationTimer);
+    this.scheduledActivationTimers.delete(sessionId);
+  }
+
+  private scheduleSessionActivation(session: QuizSession): void {
+    const scheduledStartTime = session.scheduledStartTime;
+    if (!scheduledStartTime || session.status !== "waiting") {
+      return;
+    }
+
+    const delayMs = scheduledStartTime.getTime() - Date.now();
+    if (delayMs <= 0) {
+      void this.autoActivateSession(String(session.id));
+      return;
+    }
+
+    const existingTimer = this.scheduledActivationTimers.get(
+      String(session.id),
+    );
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      this.scheduledActivationTimers.delete(String(session.id));
+    }
+
+    const timeoutRef = setTimeout(() => {
+      void this.autoActivateSession(String(session.id));
+    }, delayMs);
+
+    this.scheduledActivationTimers.set(String(session.id), timeoutRef);
+  }
+
   private mapQuestionsForLiveSession(
     questions: Question[],
-    timeLimit: number,
+    defaultTimeLimit: number,
   ): SessionQuestionPayload[] {
     return questions
       .sort((a, b) => a.order - b.order)
@@ -130,7 +171,7 @@ class QuizSessionService {
         id: question.id,
         text: question.text,
         order: question.order,
-        timeLimit,
+        timeLimit: question.timeLimit || defaultTimeLimit,
         // Never include isCorrect in live question payloads.
         options: (question.options || []).map((option) => ({
           id: option.id,
@@ -265,8 +306,21 @@ class QuizSessionService {
       leaderboardService.clear(sessionId),
     ]);
 
+    activeParticipants.delete(sessionId);
+    io.emit("activeParticipants", {
+      count: Array.from(activeParticipants.values()).reduce(
+        (total, participants) => total + participants.size,
+        0,
+      ),
+    });
+    io.emit("liveSessions", {
+      count: activeParticipants.size,
+    });
+
     io.to(`session-${sessionId}`).emit("quiz:end", { reason });
+    emitLiveSessionRemoved(sessionId);
     await this.emitSessionStats();
+    emitSessionListUpdated();
   }
 
   private async activateSessionInternal(
@@ -275,6 +329,8 @@ class QuizSessionService {
     if (session.status !== "waiting") {
       return session;
     }
+
+    this.clearScheduledActivationTimer(String(session.id));
 
     session.status = "started";
     session.startTime = new Date();
@@ -286,10 +342,10 @@ class QuizSessionService {
       throw new BadRequestError("Cannot activate a session without questions");
     }
 
-    const timeLimitPerQuestion = session.quiz?.timeLimit || 10;
+    const defaultQuestionTimeLimit = session.quiz?.timeLimit || 10;
     const liveQuestions = this.mapQuestionsForLiveSession(
       questions,
-      timeLimitPerQuestion,
+      defaultQuestionTimeLimit,
     );
 
     await Promise.all([
@@ -321,7 +377,10 @@ class QuizSessionService {
     session.createdByUserId = data.createdByUserId as string;
     const savedSession = await this.quizSessionRepository.save(session);
 
+    this.scheduleSessionActivation(savedSession);
+
     await this.emitSessionStats();
+    emitSessionListUpdated();
 
     return savedSession;
   }
@@ -377,6 +436,7 @@ class QuizSessionService {
     const activatedSession = await this.activateSessionInternal(session);
 
     await this.emitSessionStats();
+    emitSessionListUpdated();
 
     return activatedSession;
   }
@@ -391,6 +451,7 @@ class QuizSessionService {
     const activatedSession = await this.activateSessionInternal(session);
 
     await this.emitSessionStats();
+    emitSessionListUpdated();
 
     return activatedSession;
   }
@@ -451,16 +512,17 @@ class QuizSessionService {
     const now = new Date();
 
     const [activeSessions, upcomingSessions] = await Promise.all([
-      this.quizSessionRepository.find({
-        where: {
-          status: "started",
-        },
-        order: {
-          startTime: "DESC",
-        },
-      }),
       this.quizSessionRepository
         .createQueryBuilder("session")
+        .leftJoinAndSelect("session.quiz", "quiz")
+        .loadRelationCountAndMap("quiz.questionCount", "quiz.questions")
+        .where("session.status = :status", { status: "started" })
+        .orderBy("session.startTime", "DESC")
+        .getMany(),
+      this.quizSessionRepository
+        .createQueryBuilder("session")
+        .leftJoinAndSelect("session.quiz", "quiz")
+        .loadRelationCountAndMap("quiz.questionCount", "quiz.questions")
         .where("session.status = :status", { status: "waiting" })
         .andWhere("session.scheduledStartTime IS NOT NULL")
         .andWhere("session.scheduledStartTime > :now", { now })

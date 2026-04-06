@@ -21,6 +21,15 @@ export class Quiz {
   @Column()
   category!: string;
 
+  @Column({ default: "frontend" })
+  themeKey!: string;
+
+  @Column({ nullable: true })
+  icon!: string;
+
+  @Column({ nullable: true })
+  accentColor!: string;
+
   @Column()
   difficulty!: "EASY" | "MEDIUM" | "HARD";
 

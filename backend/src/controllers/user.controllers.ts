@@ -21,7 +21,17 @@ class UserController {
 
   async getUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId } = (req as any).user;
+      const { id: userId } = (req as any).user;
+
+      if (!userId) {
+        return res.status(401).json(
+          SuccessResponse({
+            message: "Unauthorized",
+            data: null,
+          }),
+        );
+      }
+
       const user = await userService.getUserById(userId);
 
       if (!user) {

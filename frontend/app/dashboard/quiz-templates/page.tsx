@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { activateQuizSession, createQuizSession } from "@/lib/quiz";
+import { getQuizTheme } from "@/lib/quizTheme";
 import ScheduleSessionModal from "./_components/ScheduleSessionModal";
 import { useQuizzes } from "@/hooks/quiz";
 
@@ -17,6 +18,9 @@ type TemplateCard = {
   upcoming: number;
   totalRuns: number;
   tags: string[];
+  icon: string;
+  accentColor: string;
+  accentClass: string;
 };
 
 export default function QuizTemplatesPage() {
@@ -41,6 +45,10 @@ export default function QuizTemplatesPage() {
           upcoming: Number(quiz.upcoming || 0),
           totalRuns: Number(quiz.totalRuns || 0),
           tags: [quiz.category || "QUIZ TEMPLATE", quiz.difficulty || "MEDIUM"],
+          ...getQuizTheme(quiz.themeKey),
+          icon: quiz.icon || getQuizTheme(quiz.themeKey).icon,
+          accentColor:
+            quiz.accentColor || getQuizTheme(quiz.themeKey).accentColor,
         }),
       ),
     [quizzes],
@@ -125,9 +133,23 @@ export default function QuizTemplatesPage() {
           {templateCards.map((card) => (
             <article
               key={card.id}
-              className="rounded-3xl border border-indigo-400/20 bg-slate-900/70 p-5"
+              className={[
+                "rounded-3xl border border-indigo-400/20 bg-slate-900/70 p-5",
+                card.accentClass,
+              ].join(" ")}
+              style={{ borderTopColor: card.accentColor }}
             >
-              <h2 className="text-2xl font-extrabold text-white">
+              <div className="flex items-start justify-between gap-3">
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 text-xl">
+                  {card.icon}
+                </span>
+
+                <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-slate-300">
+                  Template
+                </span>
+              </div>
+
+              <h2 className="mt-4 text-2xl font-extrabold text-white">
                 {card.title}
               </h2>
               <p className="mt-1 text-slate-400">{card.description}</p>

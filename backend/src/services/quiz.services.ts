@@ -20,6 +20,7 @@ class QuizService {
   async createQuiz(data: CreateQuizDTO, userId?: string): Promise<Quiz> {
     const quizData = {
       ...data,
+      themeKey: data.themeKey.trim().toLowerCase(),
       userId: userId,
     };
     const quiz = this.quizRepository.create(quizData);

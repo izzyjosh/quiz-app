@@ -8,6 +8,7 @@ import QuestionsPanel from "./_components/QuestionsPanel";
 import QuizSettingsPanel from "./_components/QuizSettingsPanel";
 import type { Question, Quiz } from "./_components/types";
 import { createQuizWithQuestions } from "@/lib/quiz";
+import { getQuizTheme } from "@/lib/quizTheme";
 
 const createOption = (prefix: string, index: number) => ({
   id: `${prefix}-option-${index}`,
@@ -39,8 +40,9 @@ export default function CreateQuizPage() {
   const [quiz, setQuiz] = useState<Quiz>({
     title: "",
     description: "",
-    icon: "🏗️",
-    accentColor: "#6366f1",
+    themeKey: "frontend",
+    icon: getQuizTheme("frontend").icon,
+    accentColor: getQuizTheme("frontend").accentColor,
     difficulty: "easy",
     category: "",
     scheduleType: "immediate",
@@ -103,6 +105,8 @@ export default function CreateQuizPage() {
         question.options.every((option) => option.text.trim().length > 0),
     );
 
+  const selectedTheme = getQuizTheme(quiz.themeKey);
+
   const handlePublishQuiz = async () => {
     if (!canPublish) {
       setPublishError(
@@ -122,6 +126,9 @@ export default function CreateQuizPage() {
           description: quiz.description.trim() || undefined,
           timeLimit: 10,
           category: quiz.category.trim(),
+          themeKey: quiz.themeKey,
+          icon: selectedTheme.icon,
+          accentColor: selectedTheme.accentColor,
           difficulty: quiz.difficulty.toUpperCase() as
             | "EASY"
             | "MEDIUM"
@@ -130,6 +137,7 @@ export default function CreateQuizPage() {
         questions: quiz.questions.map((question, index) => ({
           text: question.text.trim(),
           order: index + 1,
+          timeLimit: question.timeLimit,
           options: question.options.map((option) => ({
             text: option.text.trim(),
             isCorrect: option.id === question.correctOptionId,
@@ -196,7 +204,14 @@ export default function CreateQuizPage() {
         <div className="space-y-5">
           <QuizSettingsPanel
             quiz={quiz}
-            onQuizChange={(nextQuiz) => setQuiz(nextQuiz)}
+            onQuizChange={(nextQuiz) => {
+              const theme = getQuizTheme(nextQuiz.themeKey);
+              setQuiz({
+                ...nextQuiz,
+                icon: theme.icon,
+                accentColor: theme.accentColor,
+              });
+            }}
           />
           <PreviewCard quiz={quiz} />
         </div>
@@ -204,7 +219,7 @@ export default function CreateQuizPage() {
         <QuestionsPanel
           questions={quiz.questions}
           selectedQuestionId={selectedQuestionId}
-          accentColor={quiz.accentColor}
+          accentColor={selectedTheme.accentColor}
           onSelectQuestion={setSelectedQuestionId}
           onDeleteQuestion={handleDeleteQuestion}
           onUpdateQuestion={handleUpdateQuestion}

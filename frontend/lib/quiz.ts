@@ -5,12 +5,16 @@ interface createQuiz {
   description?: string;
   timeLimit: number;
   category: string;
+  themeKey: string;
+  icon: string;
+  accentColor: string;
   difficulty: "EASY" | "MEDIUM" | "HARD";
 }
 
 type CreateQuestionPayload = {
   text: string;
   order: number;
+  timeLimit: number;
 };
 
 type CreateOptionPayload = {
@@ -21,6 +25,7 @@ type CreateOptionPayload = {
 export type PublishQuestionPayload = {
   text: string;
   order: number;
+  timeLimit: number;
   options: CreateOptionPayload[];
 };
 
@@ -33,6 +38,9 @@ export type QuizRecord = {
   id: string;
   title: string;
   category: string;
+  themeKey: string;
+  icon: string;
+  accentColor: string;
   difficulty: "EASY" | "MEDIUM" | "HARD";
   description?: string;
   questionCount: number;
@@ -51,6 +59,18 @@ export type SessionRecord = {
   scheduledStartTime?: string | null;
   createdByUserId?: string | null;
   createdAt: string;
+  quiz?: {
+    id: string;
+    title?: string;
+    description?: string;
+    category?: string;
+    difficulty?: "EASY" | "MEDIUM" | "HARD";
+    themeKey?: string;
+    icon?: string;
+    accentColor?: string;
+    questionCount?: number;
+    questions?: Array<{ id: string }>;
+  };
 };
 
 export type ActiveAndUpcomingSessionsResponse = {
@@ -139,6 +159,7 @@ export const createQuizWithQuestions = async ({
     const createdQuestion = await createQuestion(createdQuiz.id, {
       text: question.text,
       order: question.order,
+      timeLimit: question.timeLimit,
     });
 
     await Promise.all(
