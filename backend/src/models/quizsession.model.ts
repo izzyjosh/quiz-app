@@ -14,7 +14,7 @@ import { Participant } from "./participant.model";
 @Entity("quiz sessions")
 export class QuizSession {
   @PrimaryGeneratedColumn("uuid")
-  id!: number;
+  id!: string;
 
   @Column({ nullable: true })
   sessionName!: string;

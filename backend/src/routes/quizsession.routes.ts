@@ -21,14 +21,6 @@ sessionRouter.get("/stats", authMiddleware, (req, res, next) =>
   quizSessionController.getSessionStats(req, res, next),
 );
 
-sessionRouter.post("/:sessionId/activate", authMiddleware, (req, res, next) =>
-  quizSessionController.activateSession(req, res, next),
-);
-
-sessionRouter.post("/:sessionId/end", authMiddleware, (req, res, next) =>
-  quizSessionController.endSession(req, res, next),
-);
-
 sessionRouter.post("/:sessionId/join", authMiddleware, (req, res, next) =>
   quizSessionController.joinSession(req, res, next),
 );

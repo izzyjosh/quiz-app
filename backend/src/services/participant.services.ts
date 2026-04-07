@@ -8,6 +8,17 @@ class ParticipantService {
     userId: string,
     sessionId: string,
   ): Promise<Participant> {
+    const existingParticipant = await this.participantRepo.findOne({
+      where: {
+        userId,
+        quizSessionId: sessionId,
+      },
+    });
+
+    if (existingParticipant) {
+      return existingParticipant;
+    }
+
     const participant = this.participantRepo.create({
       userId,
       quizSessionId: sessionId,

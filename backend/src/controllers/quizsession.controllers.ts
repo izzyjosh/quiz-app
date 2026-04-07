@@ -42,41 +42,6 @@ class QuizSessionController {
     }
   }
 
-  async activateSession(req: Request, res: Response, next: NextFunction) {
-    try {
-      const sessionId = req.params.sessionId as string;
-      const { id: userId } = (req as any).user;
-      const response = await quizSessionService.activateSession(
-        sessionId,
-        userId,
-      );
-      res.status(200).json(
-        SuccessResponse({
-          message: "Quiz session activated successfully",
-          data: response,
-        }),
-      );
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  async endSession(req: Request, res: Response, next: NextFunction) {
-    try {
-      const sessionId = req.params.sessionId as string;
-      const { id: userId } = (req as any).user;
-      const response = await quizSessionService.endSession(sessionId, userId);
-      res.status(200).json(
-        SuccessResponse({
-          message: "Quiz session ended successfully",
-          data: response,
-        }),
-      );
-    } catch (err) {
-      next(err);
-    }
-  }
-
   async getAllSessions(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await quizSessionService.getActiveAndUpcomingSessions();

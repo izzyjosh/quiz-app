@@ -90,7 +90,6 @@ export function registerSocketHandlers(io: Server): void {
       const sessionId = socket.data.sessionId;
       if (!sessionId) return;
 
-      const room = `session-${sessionId}`;
       const active = activeParticipants.get(sessionId);
       if (!active) return;
 
@@ -99,19 +98,6 @@ export function registerSocketHandlers(io: Server): void {
       if (active.size === 0) {
         activeParticipants.delete(sessionId);
       }
-    });
-
-    /**
-     * submissionFeedback - Real-time feedback when a participant submits an answer
-     * This event is emitted from the SubmissionService and broadcast to all room members
-     * Contains: participantId, questionId, isCorrect, pointsEarned, updatedScore, etc.
-     */
-    socket.on("submissionFeedback", (data) => {
-      console.log(
-        `Submission feedback received for session: ${data.sessionId}`,
-      );
-      console.log(data);
-      // The service handles broadcasting this to all clients in the room
     });
 
     socket.on("disconnect", () => {
