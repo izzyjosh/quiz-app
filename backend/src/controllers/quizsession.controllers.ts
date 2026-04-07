@@ -14,10 +14,10 @@ class QuizSessionController {
         createdByUserId: userId,
       };
 
-      const response = await quizSessionService.startSession(sessionData);
+      const response = await quizSessionService.createSession(sessionData);
       res.status(200).json(
         SuccessResponse({
-          message: "Quiz session started successfully",
+          message: "Quiz session created successfully",
           data: response,
         }),
       );
