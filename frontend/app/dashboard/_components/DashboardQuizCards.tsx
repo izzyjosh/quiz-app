@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useSessions } from "@/hooks/quizSession";
 import { SessionRecord, joinQuizSession } from "@/lib/quiz";
 import { getQuizTheme } from "@/lib/quizTheme";
+import { useSocket } from "@/hooks/socket";
 
 type SessionStatus = "live" | "upcoming";
 
@@ -104,11 +105,12 @@ export default function DashboardQuizCards() {
   const [joiningSessionId, setJoiningSessionId] = useState<string | null>(null);
   const liveSessions = sessions.activeSessions.map(mapLiveSession);
   const upcomingSessions = sessions.upcomingSessions.map(mapUpcomingSession);
+  const { socketId } = useSocket();
 
   const handleJoinSession = async (sessionId: string) => {
     try {
       setJoiningSessionId(sessionId);
-      await joinQuizSession(sessionId);
+      await joinQuizSession(sessionId, socketId);
       router.push(`/dashboard/session/${sessionId}`);
     } catch (joinError) {
       const message =

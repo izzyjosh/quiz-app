@@ -8,7 +8,7 @@ import {
 import { useSocket } from "@/hooks/socket";
 
 export const useSessions = () => {
-  const socket = useSocket();
+  const { socketService } = useSocket();
   const [sessions, setSessions] = useState<ActiveAndUpcomingSessionsResponse>({
     activeSessions: [],
     upcomingSessions: [],
@@ -54,15 +54,15 @@ export const useSessions = () => {
       }
     };
 
-    const unsubscribe = socket.onSessionListUpdated(() => {
+    const unsubscribe = socketService.onSessionListUpdated(() => {
       void refetch();
     });
 
     return unsubscribe;
-  }, [socket]);
+  }, [socketService]);
 
   useEffect(() => {
-    const unsubscribe = socket.onLiveSessionRemoved(({ sessionId }) => {
+    const unsubscribe = socketService.onLiveSessionRemoved(({ sessionId }) => {
       setSessions((current) => ({
         ...current,
         activeSessions: current.activeSessions.filter(
@@ -72,7 +72,7 @@ export const useSessions = () => {
     });
 
     return unsubscribe;
-  }, [socket]);
+  }, [socketService]);
 
   return { sessions, isLoading, error };
 };

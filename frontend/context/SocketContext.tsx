@@ -1,8 +1,9 @@
-import { createContext, useEffect, type ReactNode } from "react";
+import { createContext, useEffect, useState, type ReactNode } from "react";
 import { socketService } from "@/sockets/services";
 
 type SocketContextValue = {
   socketService: typeof socketService;
+  socketId: string;
 };
 
 export const SocketContext = createContext<SocketContextValue | null>(null);
@@ -12,8 +13,10 @@ type SocketProviderProps = {
 };
 
 export const SocketProvider = ({ children }: SocketProviderProps) => {
+  const [socketId, setSocketId] = useState<string>("");
   useEffect(() => {
-    socketService.connect();
+    const id = socketService.connect() as string;
+    setSocketId(id);
 
     return () => {
       socketService.disconnect();
@@ -21,7 +24,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socketService }}>
+    <SocketContext.Provider value={{ socketService, socketId }}>
       {children}
     </SocketContext.Provider>
   );

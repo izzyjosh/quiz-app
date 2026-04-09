@@ -8,4 +8,6 @@ export const SOCKET_EVENTS = {
   SESSION_STATS_UPDATE: "sessionStatsUpdated",
   SESSION_LIST_UPDATED: "sessionListUpdated",
   LIVE_SESSION_REMOVED: "liveSessionRemoved",
+  SESSION_STARTING_SOON: "sessionStartingSoon",
+  NEW_QUESTION: "newQuestion",
 };

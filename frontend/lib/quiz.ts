@@ -215,9 +215,11 @@ export const activateQuizSession = async (
 
 export const joinQuizSession = async (
   sessionId: string,
+  socketId: string,
 ): Promise<ParticipantRecord> => {
   const res = await apiFetcher(`/sessions/${sessionId}/join`, {
     method: "POST",
+    body: JSON.stringify({ socketId }),
   });
 
   if (!res.ok) {

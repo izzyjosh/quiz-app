@@ -1,6 +1,27 @@
 import { socket } from "./socket";
 import { SOCKET_EVENTS } from "./socketEvents";
 
+type SessionStartingSoonPayload = {
+  status: "starting";
+  remainingTime: number;
+  message?: string;
+};
+
+type NewQuestionPayload = {
+  question: {
+    questionId: string;
+    text: string;
+    options: Array<{
+      id: string;
+      text: string;
+    }>;
+    timeLimit: number;
+    startTime: string;
+    endsAt: string;
+  };
+  currentQuestionIndex: number;
+};
+
 type ActiveParticipantsPayload = {
   count: number;
 };
@@ -33,6 +54,7 @@ export const socketService = {
   connect() {
     if (!socket.connected) {
       socket.connect();
+      return socket.id;
     }
   },
   disconnect() {
@@ -106,6 +128,22 @@ export const socketService = {
     socket.on("participantJoined", callback);
     return () => {
       socket.off("participantJoined", callback);
+    };
+  },
+
+  // quiz session events
+
+  onSessionStartingSoon(callback: (data: SessionStartingSoonPayload) => void) {
+    socket.on(SOCKET_EVENTS.SESSION_STARTING_SOON, callback);
+    return () => {
+      socket.off(SOCKET_EVENTS.SESSION_STARTING_SOON, callback);
+    };
+  },
+
+  onNewQuestion(callback: (data: NewQuestionPayload) => void) {
+    socket.on(SOCKET_EVENTS.NEW_QUESTION, callback);
+    return () => {
+      socket.off(SOCKET_EVENTS.NEW_QUESTION, callback);
     };
   },
 };

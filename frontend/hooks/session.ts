@@ -12,7 +12,7 @@ const initialStats: SessionStatsResponse = {
 };
 
 export const useSessionStats = () => {
-  const socket = useSocket();
+  const { socketService } = useSocket();
   const [stats, setStats] = useState<SessionStatsResponse>(initialStats);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,12 +46,12 @@ export const useSessionStats = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = socket.onSessionStatsUpdated((data) => {
+    const unsubscribe = socketService.onSessionStatsUpdated((data) => {
       setStats(data);
     });
 
     return unsubscribe;
-  }, [socket]);
+  }, [socketService]);
 
   return { stats, isLoading, error };
 };
