@@ -338,25 +338,31 @@ class QuizSessionService {
       participants: new Map<string, InMemoryParticipant>(),
     });
 
+    void this.scheduleSession(this.session.get(savedSession.id)!);
+
     return savedSession;
   }
 
-  async joinSession(sessionId: string, userId: string): Promise<Participant> {
-    const session = await this.quizSessionRepository.findOne({
+  async joinSession(
+    sessionId: string,
+    userId: string,
+    socketId: string,
+  ): Promise<Participant> {
+    const quizSession = await this.quizSessionRepository.findOne({
       where: { id: sessionId },
     });
 
-    if (!session) {
+    if (!quizSession) {
       throw new NotFoundError("Quiz session not found");
     }
 
-    if (session.status === "finished") {
+    if (quizSession.status === "finished") {
       throw new NotFoundError("Quiz session has already finished");
     }
 
     const participant = await participantService.createParticipant(
       userId,
-      session.id as any,
+      quizSession.id as any,
     );
 
     if (!activeParticipants.has(sessionId)) {
@@ -369,13 +375,52 @@ class QuizSessionService {
     if (inMemorySession) {
       inMemorySession.participants.set(userId, {
         participantId: participant.id,
-        socketId: null,
+        socketId: socketId,
         score: 0,
         lastAnsweredQuestionIndex: -1,
+      });
+
+      if (inMemorySession.status === "started") {
+        this.sendCurrentQuestionToSocket(socketId, inMemorySession);
+      }
+    }
+
+    const now = Date.now();
+    const startTime =
+      this.session.get(sessionId)?.scheduledStartTime.getTime() || 0;
+    if (this.session.get(sessionId)?.status === "waiting" && now < startTime) {
+      const timeUntilStart = startTime - now;
+
+      io.to(sessionId).emit("sessionStartingSoon", {
+        message: `Quiz session will start in ${Math.ceil(timeUntilStart / 1000)} seconds!`,
       });
     }
 
     return participant;
+  }
+
+  sendCurrentQuestionToSocket(
+    socketId: string,
+    session: InMemorySessionSnapshot,
+  ) {
+    const question = session.questions[session.currentQuestionIndex];
+
+    const now = Date.now();
+    const endsAt = new Date(
+      session.questionStartTime + question.timeLimit * 1000,
+    ).toISOString();
+
+    io.to(socketId).emit("newQuestion", {
+      question: {
+        questionId: question.questionId,
+        text: question.text,
+        options: question.options,
+        timeLimit: question.timeLimit,
+        startTime: question.startTime,
+        endsAt,
+      },
+      currentQuestionIndex: session.currentQuestionIndex,
+    });
   }
 
   // get all active and upcoming sessions
@@ -427,8 +472,6 @@ class QuizSessionService {
       totalQuizTemplates,
     };
   }
-
-  // ====== Real time aspects ======
 }
 
 export const quizSessionService = new QuizSessionService();

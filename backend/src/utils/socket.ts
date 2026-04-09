@@ -22,17 +22,9 @@ export function emitTotalQuizCount(count: number): void {
   socketServer?.emit("quizCountUpdated", { count });
 }
 
-export function emitSessionStatsUpdated(stats: SessionStatsPayload): void {
-  socketServer?.emit("sessionStatsUpdated", stats);
-}
 
-export function emitSessionListUpdated(): void {
-  socketServer?.emit("sessionListUpdated");
-}
 
-export function emitLiveSessionRemoved(sessionId: string): void {
-  socketServer?.emit("liveSessionRemoved", { sessionId });
-}
+
 
 function getTotalActiveParticipants(): number {
   let count = 0;
@@ -84,21 +76,7 @@ export function registerSocketHandlers(io: Server): void {
       });
     });
 
-    socket.on("leaveParticipant", (userId) => {
-      console.log(`Client ${socket.id} leaving participant room: ${userId}`);
-
-      const sessionId = socket.data.sessionId;
-      if (!sessionId) return;
-
-      const active = activeParticipants.get(sessionId);
-      if (!active) return;
-
-      active.delete(userId);
-
-      if (active.size === 0) {
-        activeParticipants.delete(sessionId);
-      }
-    });
+    
 
     socket.on("disconnect", () => {
       console.log("Client disconnected: " + socket.id);
